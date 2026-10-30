@@ -1,25 +1,168 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Hayer federated service registry",
+  "title": "HAYER federated service and storage-node registry",
   "type": "object",
-  "required": ["version", "generatedAt", "nodes"],
+  "required": [
+    "version",
+    "generatedAt",
+    "nodes"
+  ],
   "properties": {
-    "version": { "type": "integer", "minimum": 1 },
-    "generatedAt": { "type": "string", "format": "date-time" },
-    "sources": { "type": "array", "items": { "type": "string", "format": "uri" } },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "uniqueItems": true
+    },
     "nodes": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "type", "url"],
+        "required": [
+          "id",
+          "type",
+          "url"
+        ],
         "properties": {
-          "id": { "type": "string", "maxLength": 180 },
-          "name": { "type": "string", "maxLength": 100 },
-          "type": { "enum": ["mastodon", "matrix", "lemmy", "peertube", "pixelfed", "xmpp", "nextcloud", "discourse", "mobilizon", "zulip", "humhub", "rocketchat"] },
-          "url": { "type": "string", "format": "uri" },
-          "statusUrl": { "type": "string", "format": "uri" },
-          "region": { "type": "string" },
-          "source": { "type": "string" }
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "type": {
+            "enum": [
+              "mastodon",
+              "matrix",
+              "lemmy",
+              "peertube",
+              "pixelfed",
+              "xmpp",
+              "nextcloud",
+              "discourse",
+              "mobilizon",
+              "zulip",
+              "humhub",
+              "rocketchat",
+              "hayer-storage"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "statusUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "operatorId": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "failureDomain": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "software": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "integrationModes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "hayer_sso",
+                "oauth_consent",
+                "managed_provisioning",
+                "federated_public",
+                "storage_agent",
+                "unsupported"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "public_read",
+                "publish",
+                "messaging",
+                "media_upload",
+                "file_storage",
+                "encrypted_chunk_storage",
+                "account_provisioning",
+                "oidc",
+                "federation",
+                "backup_export"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "registration": {
+            "enum": [
+              "open",
+              "invite_only",
+              "closed",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "health": {
+            "enum": [
+              "healthy",
+              "degraded",
+              "unreachable",
+              "unknown"
+            ]
+          },
+          "lastCheckedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policyUrls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            "uniqueItems": true
+          },
+          "securityContact": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000
+          }
         },
         "additionalProperties": false
       }
