@@ -2,7 +2,7 @@
 <html lang="hy">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101827"><meta name="description" content="Հայկական միասնական համայնք՝ բազմաթիվ անկախ բաց հարթակներով։">
+<meta name="theme-color" content="#101827"><link rel="manifest" href="./manifest.webmanifest"><meta name="description" content="Հայկական միասնական համայնք՝ բազմաթիվ անկախ բաց հարթակներով։">
 <title>ՀԱՅԵՐ — միասնական համայնք</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#111d30;--panel2:#17263d;--line:#263852;--text:#edf4ff;--muted:#9fb0c8;--gold:#e5b85c;--cyan:#67d5d0;--green:#64d69b;--red:#ff7c83;--radius:20px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -61,5 +61,6 @@ $("registryFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{
 $("checkBtn").onclick=async()=>{const candidates=nodes.filter(n=>n.statusUrl);if(!candidates.length){alert("Այս ռեեստրում statusUrl դաշտով հանգույց չկա։ Առանց ստուգման հասցեի կամ CORS թույլտվության բրաուզերը չի կարող վստահելի վիճակ որոշել։");return}const btn=$("checkBtn");btn.disabled=true;btn.textContent="Ստուգվում է…";await Promise.all(candidates.map(async n=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch(n.statusUrl,{method:"GET",mode:"cors",cache:"no-store",signal:controller.signal});n.state=r.ok?"up":"down";n.checkedAt=new Date().toISOString()}catch{n.state="unknown";n.checkedAt=new Date().toISOString()}finally{clearTimeout(timer)}}));btn.disabled=false;btn.textContent="Ստուգել հասանելիությունը";render()};
 ["serverSearch","typeFilter","stateFilter"].forEach(id=>$(id).addEventListener(id==="serverSearch"?"input":"change",render));
 load();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
 </body></html>
