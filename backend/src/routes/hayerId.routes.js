@@ -20,80 +20,51 @@ const hayerIdLimiter = rateLimit({
 
 // Public routes
 
-// Get HAYER ID information by HAYER ID
-router.get('/:hayerId', asyncHandler(hayerIdController.getHayerIdById));
+// Get HAYER ID by HAYER ID string
+router.get('/:hayerId', asyncHandler(hayerIdController.getHayerId));
 
-// Verify HAYER ID exists
-router.get('/:hayerId/verify', asyncHandler(hayerIdController.verifyHayerId));
+// Get HAYER ID by username
+router.get('/username/:username', asyncHandler(hayerIdController.getHayerIdByUsername));
+
+// Get HAYER ID by email
+router.get('/email/:email', asyncHandler(hayerIdController.getHayerIdByEmail));
+
+// Search HAYER IDs
+router.get('/search', asyncHandler(hayerIdController.searchHayerIds));
+
+// Verify federation token
+router.post('/federation/verify', asyncHandler(hayerIdController.verifyFederationToken));
 
 // Authenticated routes (require JWT)
 
-// Get current user's HAYER IDs
-router.get('/me', jwtAuth(), asyncHandler(hayerIdController.getCurrentUserHayerIds));
+// Get current user's HAYER ID
+router.get('/me', jwtAuth(), asyncHandler(hayerIdController.getMyHayerId));
 
-// Get primary HAYER ID
-router.get('/me/primary', jwtAuth(), asyncHandler(hayerIdController.getPrimaryHayerId));
+// Get all HAYER IDs for current user
+router.get('/me/all', jwtAuth(), asyncHandler(hayerIdController.getMyHayerIds));
 
 // Create new HAYER ID
-router.post('/me', jwtAuth(), asyncHandler(hayerIdController.createHayerId));
+router.post('/me', jwtAuth(), hayerIdLimiter, asyncHandler(hayerIdController.createHayerId));
+
+// Update HAYER ID settings
+router.patch('/me/:hayerId', jwtAuth(), asyncHandler(hayerIdController.updateHayerId));
 
 // Set primary HAYER ID
-router.patch('/me/:id/primary', jwtAuth(), asyncHandler(hayerIdController.setPrimaryHayerId));
+router.patch('/me/:hayerId/primary', jwtAuth(), asyncHandler(hayerIdController.setPrimaryHayerId));
 
-// Update HAYER ID
-router.patch('/me/:id', jwtAuth(), checkOwnership(hayerIdController.HayerId), asyncHandler(hayerIdController.updateHayerId));
+// Deactivate HAYER ID
+router.delete('/me/:hayerId', jwtAuth(), asyncHandler(hayerIdController.deactivateHayerId));
 
-// Delete HAYER ID
-router.delete('/me/:id', jwtAuth(), checkOwnership(hayerIdController.HayerId), asyncHandler(hayerIdController.deleteHayerId));
+// Verify HAYER ID ownership
+router.get('/me/:hayerId/verify', jwtAuth(), asyncHandler(hayerIdController.verifyOwnership));
 
-// Generate HAYER ID recovery code
-router.post('/me/recovery-code', jwtAuth(), asyncHandler(hayerIdController.generateRecoveryCode));
-
-// Verify HAYER ID recovery code
-router.post('/me/recovery-code/verify', jwtAuth(), asyncHandler(hayerIdController.verifyRecoveryCode));
-
-// Link external account to HAYER ID
-router.post('/me/link', jwtAuth(), asyncHandler(hayerIdController.linkExternalAccount));
-
-// Unlink external account from HAYER ID
-router.delete('/me/link/:provider', jwtAuth(), asyncHandler(hayerIdController.unlinkExternalAccount));
-
-// Get linked accounts
-router.get('/me/links', jwtAuth(), asyncHandler(hayerIdController.getLinkedAccounts));
+// Generate federation token
+router.post('/me/:hayerId/federation/token', jwtAuth(), asyncHandler(hayerIdController.generateFederationToken));
 
 // Admin routes (require admin privileges)
 
-// List all HAYER IDs
-router.get('/admin/list', jwtAuth(), isAdmin, asyncHandler(hayerIdController.listAllHayerIds));
-
-// Get HAYER ID details (admin)
-router.get('/admin/:id', jwtAuth(), isAdmin, asyncHandler(hayerIdController.getHayerIdDetails));
-
-// Update HAYER ID (admin)
-router.patch('/admin/:id', jwtAuth(), isAdmin, asyncHandler(hayerIdController.updateHayerIdAdmin));
-
-// Suspend HAYER ID (admin)
-router.patch('/admin/:id/suspend', jwtAuth(), isAdmin, asyncHandler(hayerIdController.suspendHayerId));
-
-// Unsuspend HAYER ID (admin)
-router.patch('/admin/:id/unsuspend', jwtAuth(), isAdmin, asyncHandler(hayerIdController.unsuspendHayerId));
-
-// Search HAYER IDs (admin)
-router.get('/admin/search', jwtAuth(), isAdmin, asyncHandler(hayerIdController.searchHayerIds));
-
-// Get HAYER ID statistics (admin)
-router.get('/admin/statistics', jwtAuth(), isAdmin, asyncHandler(hayerIdController.getHayerIdStatistics));
-
-// Resolve HAYER ID to user
-router.get('/admin/:hayerId/resolve', jwtAuth(), isAdmin, asyncHandler(hayerIdController.resolveHayerId));
-
-// Federation routes
-
-// Get HAYER ID federation information
-router.get('/:hayerId/federation', asyncHandler(hayerIdController.getFederationInfo));
-
-// Verify HAYER ID across federation
-router.post('/:hayerId/federation/verify', asyncHandler(hayerIdController.verifyFederation));
+// Get HAYER ID statistics
+router.get('/admin/statistics', jwtAuth(), isAdmin, asyncHandler(hayerIdController.getHayerIdStats));
 
 // Health check
 router.get('/health', (req, res) => {
