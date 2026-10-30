@@ -42,6 +42,7 @@ const HayerId = require('./hayerId.model.js')(sequelize, DataTypes);
 const Profile = require('./profile.model.js')(sequelize, DataTypes);
 const Role = require('./role.model.js')(sequelize, DataTypes);
 const Permission = require('./permission.model.js')(sequelize, DataTypes);
+const UserRole = require('./userRole.model.js')(sequelize, DataTypes);
 const Service = require('./service.model.js')(sequelize, DataTypes);
 const ServiceInstance = require('./serviceInstance.model.js')(sequelize, DataTypes);
 const Node = require('./node.model.js')(sequelize, DataTypes);
@@ -90,8 +91,8 @@ const defineRelationships = () => {
   StorageObject.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
 
   // Role and Permission relationships
-  User.belongsToMany(Role, { through: 'UserRoles', foreignKey: 'userId' });
-  Role.belongsToMany(User, { through: 'UserRoles', foreignKey: 'roleId' });
+  User.belongsToMany(Role, { through: UserRole, foreignKey: 'userId' });
+  Role.belongsToMany(User, { through: UserRole, foreignKey: 'roleId' });
 
   Role.hasMany(Permission, { foreignKey: 'roleId', onDelete: 'CASCADE' });
   Permission.belongsTo(Role, { foreignKey: 'roleId' });
@@ -166,6 +167,7 @@ module.exports = {
   Profile,
   Role,
   Permission,
+  UserRole,
   Service,
   ServiceInstance,
   Node,
