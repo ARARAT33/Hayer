@@ -284,7 +284,7 @@ function mxPassword(){return document.getElementById("matrixPassword")?.value||"
 function mxSetStatus(message){const s=document.getElementById("authStatus");if(s)s.textContent=message}
 const mxDbPromise=new Promise((resolve,reject)=>{if(!("indexedDB" in window)){reject(Error("IndexedDB unavailable"));return}const request=indexedDB.open("hayer-secure-session",1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("sessions"))request.result.createObjectStore("sessions")};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});
 async function mxSave(){try{const db=await mxDbPromise;await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readwrite");tx.objectStore("sessions").put(mx,"matrix");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});return true}catch{return false}}
-async function mxLoad(){try{const db=await mxDbPromise;const saved=await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readonly"),req=tx.objectStore("sessions").get("matrix");req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});if(saved?.base&&saved?.token&&saved?.userId){mx=saved;return true}}catch{}return false}
+async function mxLoad(){try{const db=await mxDbPromise;let saved=await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readonly"),req=tx.objectStore("sessions").get("matrix");req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});if(!saved){try{const legacy=JSON.parse(localStorage.getItem(mxStoreKey)||"null");if(legacy?.base&&legacy?.token&&legacy?.userId){saved=legacy;mx=saved;await mxSave();localStorage.removeItem(mxStoreKey)}}catch{}}if(saved?.base&&saved?.token&&saved?.userId){mx=saved;return true}}catch{}return false}
 async function mxClearSavedSession(){try{const db=await mxDbPromise;await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readwrite");tx.objectStore("sessions").delete("matrix");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}catch{}}
 async function mxRequest(path,opts={}){
  if(!mx?.base)throw Error("Matrix սերվերը կարգավորված չէ։");
@@ -301,16 +301,16 @@ async function mxResolveBase(server){
 async function mxSetUser(userId,token,deviceId,base,refreshToken=null){
  mx={base,token,userId,deviceId,refreshToken};const local=userId.slice(1).split(":")[0];hayidUser={id:userId,handle:userId,name:local,avatar_url:""};const saved=await mxSave();localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));if(!saved)mxSetStatus("Մուտքը հաջողվեց, բայց անվտանգ սեսիայի պահպանումը հասանելի չէ այս բրաուզերում։");
 }
-async function mxFinishLogin(data,base){
+async function mxFinishLogin(data,base,encryption=null){
  await mxSetUser(data.user_id,data.access_token,data.device_id,base,data.refresh_token||null);
  try{const p=await mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(mx.userId));hayidUser.name=p.displayname||mx.userId.slice(1).split(":")[0];hayidUser.avatar_url=p.avatar_url||"";localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser))}catch{}
- hayidRender();mxSetStatus("Մուտքը հաջողվեց։ HAYID՝ "+hayidUser.handle);enterHayerApp();
+ hayidRender();mxSetStatus("Մուտքը հաջողվեց։ HAYID՝ "+hayidUser.handle+(encryption?.enabled?" · E2EE SDK-ը պատրաստ է":" · E2EE-ը հասանելի չէ այս սեսիայում"));enterHayerApp();
 }
 async function mxLogin(){
  const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
  if(!window.HayerMatrixSDK){mxSetStatus("Matrix SDK-ը դեռ չի բեռնվել։ Թարմացրու էջը և փորձիր կրկին։");return}
  mxSetStatus("Matrix SDK-ով կապվում ենք հանրային սերվերին…");
- try{const result=await HayerMatrixSDK.loginWithPassword(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});await mxFinishLogin(result.credentials,result.baseUrl)}
+ try{const result=await HayerMatrixSDK.loginWithPassword(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});await mxFinishLogin(result.credentials,result.baseUrl,result.encryption)}
  catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+(e.message||"Անհայտ սխալ։")+" Ստուգիր սերվերի հասցեն, CORS-ը և հաշվի տվյալները։")}
 }
 async function mxRegister(){
@@ -407,8 +407,8 @@ async function restoreHayerSession(){
  if(!await mxLoad())return false;
  try{
   if(!window.HayerMatrixSDK)throw Error("Matrix SDK bundle-ը չի բեռնվել։");
-  await HayerMatrixSDK.resumeSession({user_id:mx.userId,access_token:mx.token,device_id:mx.deviceId,refresh_token:mx.refreshToken},mx.base,{enableEncryption:true});
-  const p=await mxProfile(mx.userId);hayidUser={id:mx.userId,handle:mx.userId,name:p.displayname||mx.userId.slice(1).split(":")[0],avatar_url:p.avatar_url||""};localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();enterHayerApp();return true;
+  const resumed=await HayerMatrixSDK.resumeSession({user_id:mx.userId,access_token:mx.token,device_id:mx.deviceId,refresh_token:mx.refreshToken},mx.base,{enableEncryption:true});
+  const p=await mxProfile(mx.userId);hayidUser={id:mx.userId,handle:mx.userId,name:p.displayname||mx.userId.slice(1).split(":")[0],avatar_url:p.avatar_url||""};localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();mxSetStatus("Սեսիան վերականգնվեց։"+(resumed.encryption?.enabled?" E2EE SDK-ը պատրաստ է.":" E2EE-ը հասանելի չէ այս սեսիայում."));enterHayerApp();return true;
  }catch(e){mx=null;await mxClearSavedSession();mxSetStatus("Պահված մուտքը կամ SDK սեսիան այլևս վավեր չէ։ Մուտք գործիր կրկին։ "+(e.message||""));return false}
 }
 hayidInit();
