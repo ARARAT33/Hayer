@@ -175,7 +175,7 @@ function renderServiceActions(){
   });
 }
 
-const HAYID_GOOGLE_CLIENT_ID="";
+const HAYID_GOOGLE_CLIENT_ID="741485932725-e8p4qfj97i322kscf8amjqk88r4k8fkn.apps.googleusercontent.com";
 let hayidNonce=null,hayidUser=null;
 function hayidRandomNonce(){const b=new Uint8Array(32);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function hayidDecode(s){s=s.replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s+"=".repeat((4-s.length%4)%4)),c=>c.charCodeAt(0))))}
