@@ -5,12 +5,11 @@
  * Discovery is read-only. It never creates accounts or bypasses instance policies.
  */
 import { readFile, writeFile } from "node:fs/promises";
-import { gunzipSync } from "node:zlib";
 
 const SOURCES = {
   matrix: "https://servers.joinmatrix.org/servers.json",
   peertube: "https://instances.joinpeertube.org/api/v1/instances",
-  lemmy: "https://raw.githubusercontent.com/LemmyNet/lemmy-statistics/main/instances/joinlemmy.json.gz",
+  lemmy: "https://lemmy.ml/api/v3/federated_instances",
   mastodonPeers: "https://mastodon.social/api/v1/instance/peers",
   pixelfedPeers: "https://pixelfed.social/api/v1/instance/peers",
 };
@@ -125,21 +124,21 @@ async function peerNodes(seedUrl, fallbackType) {
   return output;
 }
 function extractLemmyHosts(payload) {
-  const rows = Array.isArray(payload) ? payload : payload?.instances || payload?.data || [];
-  return [...new Set(rows.map((row) => typeof row === "string" ? row : row?.domain || row?.host || row?.base_url || row?.url).map(httpsBase).filter(Boolean))].slice(0, MAX_LEMMY_CANDIDATES);
+  const federation = payload?.federated_instances || payload;
+  const rows = [
+    ...(Array.isArray(federation?.linked) ? federation.linked : []),
+    ...(Array.isArray(federation?.allowed) ? federation.allowed : []),
+  ];
+  const hosts = rows
+    .map((row) => typeof row === "string" ? row : row?.domain || row?.host || row?.url)
+    .map(httpsBase)
+    .filter(Boolean);
+  return [...new Set(["https://lemmy.ml", ...hosts])].slice(0, MAX_LEMMY_CANDIDATES);
 }
 async function lemmyNodes() {
-  const response = await fetch(SOURCES.lemmy, {
-    headers: { "user-agent": "HAYER-public-registry/2.0" },
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  if (!response.ok) throw new Error(`HTTP ${response.status} from ${SOURCES.lemmy}`);
-  const raw = Buffer.from(await response.arrayBuffer());
-  let payload;
-  try { payload = JSON.parse(gunzipSync(raw).toString("utf8")); }
-  catch { throw new Error("Lemmy statistics archive could not be decoded"); }
+  const payload = await getJson(SOURCES.lemmy);
   const hosts = extractLemmyHosts(payload);
-  if (!hosts.length) throw new Error("Lemmy statistics contained no recognizable instance hosts");
+  if (!hosts.length) throw new Error("Lemmy federated-instance API returned no recognizable hosts");
   const output = [];
   for (let i = 0; i < hosts.length; i += 8) {
     const batch = await Promise.allSettled(hosts.slice(i, i + 8).map(async (host) => {
@@ -151,7 +150,7 @@ async function lemmyNodes() {
         name, statusUrl: `${host}/api/v3/site`, source: SOURCES.lemmy,
         registration: registration === "Open" ? "open" : registration === "Closed" ? "closed" : registration === "RequireApplication" ? "invite_only" : "unknown",
         health: "healthy", verified: true,
-        notes: "Discovered in the Lemmy community statistics dataset and verified with the public /api/v3/site endpoint. Signup and federation rules are controlled by the operator.",
+        notes: "Discovered from a public Lemmy federation list and verified with the public /api/v3/site endpoint. Signup and federation rules are controlled by the operator.",
       });
     }));
     for (const result of batch) if (result.status === "fulfilled" && result.value) output.push(result.value);
