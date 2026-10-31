@@ -125,7 +125,7 @@ async function peerNodes(seedUrl, fallbackType) {
 }
 function extractLemmyHosts(payload) {
   const rows = Array.isArray(payload) ? payload : payload?.instances || payload?.data || [];
-  return [...new Set(rows.map((row) => row.domain || row.host || row.base_url || row.url).map(httpsBase).filter(Boolean))].slice(0, MAX_LEMMY_CANDIDATES);
+  return [...new Set(rows.map((row) => typeof row === "string" ? row : row?.domain || row?.host || row?.base_url || row?.url).map(httpsBase).filter(Boolean))].slice(0, MAX_LEMMY_CANDIDATES);
 }
 async function lemmyNodes() {
   const response = await fetch(SOURCES.lemmy, {
