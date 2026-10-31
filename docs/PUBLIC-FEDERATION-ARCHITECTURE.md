@@ -34,6 +34,15 @@ The workflow refreshes the registry every six hours and can also be run manually
 5. If an instance is unavailable, HAYER may recommend another compatible instance for a new account. It must not claim that the user's old account or private data has migrated.
 6. A HAYER-wide identity can only be authoritative if a trusted identity provider exists. With the current no-server requirement, HAYER Pages cannot securely issue or recover accounts by itself. Until an external, user-approved identity provider is selected, HAYER ID is a profile/handle concept, not a working cross-network SSO credential.
 
+## Implemented browser adapters
+
+- Mastodon: the portal can read the selected instance public timeline through `GET /api/v1/timelines/public` when that instance permits browser CORS access.
+- PeerTube: the portal can read public videos through `GET /api/v1/videos` when that instance permits browser CORS access.
+- Matrix: the portal opens Element Web with the selected public homeserver for the user to continue through that operator's own sign-up/login flow.
+- Mastodon, Lemmy, PeerTube and Pixelfed: the portal opens a discovered public instance; it only deep-links to known signup paths when the registry explicitly marks registration as open.
+
+These are public, read-only discovery and launch integrations. They do not provide a HAYER account, cross-service identity, private messaging from inside the portal, uploads, or write permissions. Browser CORS failures are reported as unavailable rather than bypassed with a proxy.
+
 ## Planned next adapters
 
 - Lemmy: consume the public Lemmyverse instance dataset and validate with `GET /api/v3/site`.
