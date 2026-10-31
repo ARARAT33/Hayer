@@ -47,7 +47,7 @@ body.auth-mode{background:radial-gradient(ellipse at 15% 10%,#23456a 0,transpare
 .app-profile-id{font-size:19px;color:#67d5d0;font-weight:800;overflow-wrap:anywhere}
 .app-empty-icon{font-size:34px;margin-bottom:10px}
 @media(max-width:760px){.app-layout{grid-template-columns:1fr}.app-sidebar{position:fixed;z-index:10;top:auto;bottom:0;left:0;right:0;width:100%;height:auto;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid #263852;display:block}.app-brand,.app-side-profile,.app-plus{display:none}.app-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.app-nav button{justify-content:center;flex-direction:column;gap:4px;padding:8px 2px;font-size:10px}.app-nav .nav-emoji{font-size:18px}.app-main{padding:22px 14px 105px}#appFeedGrid{grid-template-columns:1fr}}
-</style>
+.app-field{width:100%;padding:12px;border:1px solid #344b68;border-radius:12px;background:#0b1728;color:#edf4ff;margin:7px 0;font:inherit;resize:vertical}.app-compose-actions,.app-search-row,.app-send-row{display:flex;gap:10px;align-items:center}.app-compose-actions{justify-content:space-between}.app-search-row .app-field,.app-send-row .app-field{flex:1}.app-chat-layout{display:grid;grid-template-columns:.8fr 1.4fr;gap:12px}.app-messages{min-height:220px;max-height:400px;overflow:auto}.app-message{padding:10px;margin:6px 0;border-radius:12px;background:#172840}.app-message.mine{text-align:right;background:#1d3d48}.app-post{border:1px solid #263852;background:#101c2d;border-radius:18px;padding:16px;margin:12px 0}.app-post-media{width:100%;max-height:420px;object-fit:contain}.app-community-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}[data-theme="light"] #hayerApp{background:#f4f7fb;color:#172338}[data-theme="light"] .app-sidebar,[data-theme="light"] .app-panel,[data-theme="light"] .app-post{background:#fff;color:#172338;border-color:#dce4ef}[data-theme="light"] .app-field{background:#fff;color:#172338;border-color:#cbd5e1}[data-theme="light"] .app-nav button{color:#52647d}[data-theme="light"] .app-nav button.active{background:#e8eef7;color:#172338}@media(max-width:760px){.app-chat-layout,.app-community-grid{grid-template-columns:1fr}}</style>
 </head>
 <body class="auth-mode">
 
@@ -76,21 +76,11 @@ body.auth-mode{background:radial-gradient(ellipse at 15% 10%,#23456a 0,transpare
    <div class="app-side-profile"><b id="appUserName">HAYER member</b><small id="appUserId">HAYID</small></div>
   </aside>
   <main class="app-main">
-   <header class="app-topbar"><h1 id="appViewTitle">Feed</h1><span class="pill">HAYER</span></header>
-   <section class="app-view" id="appViewFeed">
-    <div class="app-feed-controls"><button class="active" data-feed="posts">Գրառումներ</button><button data-feed="videos">Տեսանյութեր</button><button data-feed="communities">Համայնքներ</button><button id="appFeedRefresh">Թարմացնել ↻</button></div>
-    <div id="appFeedGrid"><div class="app-panel app-muted">Լրահոսը բեռնվում է…</div></div>
-   </section>
-   <section class="app-view" id="appViewChat" hidden>
-    <div class="app-panel"><div class="app-empty-icon">✉</div><h2>Քո զրույցները</h2><p class="app-muted">Հաղորդագրությունների բաժինը պատրաստվում է։ Անձնական և խմբային զրույցները կակտիվանան, երբ HAYID-ի հետ կապվող հաղորդագրությունների ծառայությունը հաստատի անվտանգ մուտքն ու հաշվի ստեղծումը։</p></div>
-   </section>
-   <section class="app-view" id="appViewCommunity" hidden>
-    <div class="app-feed-controls"><button class="active" data-feed="communities">Համայնքներ</button><button data-feed="posts">Գրառումներ</button></div>
-    <div id="appCommunityGrid"><div class="app-panel app-muted">Համայնքները բեռնվում են…</div></div>
-   </section>
-   <section class="app-view" id="appViewProfile" hidden>
-    <div class="app-panel"><div class="eyebrow">Քո հաշիվը</div><h2 id="appProfileName">HAYER member</h2><p class="app-profile-id" id="appProfileId"></p><p class="app-muted">Սա քո HAYID-ն է։ Անվտանգ մուտքի կարգավորումները և արտաքին ծառայությունների կապերը կցուցադրվեն այստեղ։</p><button class="btn" id="appLogout">Դուրս գալ</button></div>
-   </section>
+   <header class="app-topbar"><h1 id="appViewTitle">Feed</h1><div><button class="btn" id="themeToggle">☀ / ☾</button> <span class="pill">HAYER</span></div></header>
+   <section class="app-view" id="appViewFeed"><div class="app-panel"><h2>Ի՞նչ կա նոր</h2><textarea id="postBody" class="app-field" rows="3" maxlength="5000" placeholder="Գրիր քո միտքը հայ համայնքին…"></textarea><input id="postMedia" class="app-field" type="url" placeholder="Նկարի կամ տեսանյութի HTTPS հղում"><input id="postLink" class="app-field" type="url" placeholder="YouTube, TikTok կամ այլ հղում"><div class="app-compose-actions"><span class="app-muted">HAYER-ի հրապարակում</span><button class="btn primary" id="publishPost">Հրապարակել ↗</button></div></div><div class="app-search-row"><input id="feedSearch" class="app-field" type="search" placeholder="Որոնել HAYER-ի հրապարակումներում…"><button class="btn" id="feedSearchBtn">Որոնել</button></div><div id="appFeedGrid">Բեռնվում է…</div></section>
+   <section class="app-view" id="appViewChat"><div class="app-panel"><h2>Գտիր ընկերոջդ HAYID-ով</h2><div class="app-search-row"><input id="chatFindId" class="app-field" placeholder="@HAY-… կամ HAY-…"><button class="btn primary" id="chatFindBtn">Գտնել</button></div><div id="chatFindResult" class="app-muted"></div></div><div class="app-chat-layout"><div class="app-panel"><h3>Զրույցներ</h3><button class="btn" id="chatRefresh">Թարմացնել</button><div id="conversationList">Դեռ զրույցներ չկան։</div><details><summary>＋ Ստեղծել խումբ</summary><input id="groupTitle" class="app-field" placeholder="Խմբի անունը"><textarea id="groupIds" class="app-field" placeholder="HAYID-ներ՝ ստորակետով"></textarea><button class="btn primary" id="createGroup">Ստեղծել խումբ</button></details></div><div class="app-panel"><h3 id="chatTitle">Ընտրիր զրույց</h3><div id="messageList" class="app-messages">Ընտրիր ընկերոջդ։</div><div class="app-send-row"><textarea id="messageText" class="app-field" placeholder="Հաղորդագրություն…" disabled></textarea><button class="btn primary" id="sendMessage" disabled>Ուղարկել</button></div><p class="app-muted">Ձայնային/տեսազանգերը, ֆայլերն ու ձայնային հաղորդագրությունները դեռ չեն միացված։</p></div></div></section>
+   <section class="app-view" id="appViewCommunity"><div class="app-panel"><h2>Ստեղծիր հայկական համայնք</h2><input id="communityName" class="app-field" placeholder="Համայնքի անունը"><textarea id="communityDescription" class="app-field" placeholder="Նկարագրություն"></textarea><button class="btn primary" id="createCommunity">Ստեղծել համայնք ＋</button></div><div class="app-search-row"><input id="communitySearch" class="app-field" placeholder="Որոնել համայնքներ…"><button class="btn" id="communitySearchBtn">Որոնել</button></div><div id="appCommunityGrid" class="app-community-grid">Բեռնվում է…</div></section>
+   <section class="app-view" id="appViewProfile"><div class="app-panel"><h2 id="appProfileName">HAYER member</h2><p class="app-profile-id" id="appProfileId"></p><p class="app-muted">Քո HAYID հաշիվը։</p><button class="btn" id="copyHayid">Պատճենել HAYID-ը</button> <button class="btn" id="appLogout">Դուրս գալ</button></div></section>
   </main>
  </div>
 </div>
@@ -191,16 +181,8 @@ async function hayidVerify(jwt){
  if(!await crypto.subtle.verify("RSASSA-PKCS1-v1_5",key,Uint8Array.from(atob(sig),c=>c.charCodeAt(0)),new TextEncoder().encode(p[0]+"."+p[1])))throw Error("Google token-ի ստորագրությունն անվավեր է");
  return c;
 }
-async function hayidCredential(response){
- const s=$("hayidStatus");if(s)s.textContent="Ստուգվում է ինքնությունը…";const authStatus=$("authStatus");if(authStatus)authStatus.textContent="Ստուգվում է ինքնությունը…";
- try{
-  const c=await hayidVerify(response.credential),digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("https://accounts.google.com|"+c.sub));
-  const id="HAY-"+[...new Uint8Array(digest).slice(0,16)].map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase();
-  hayidUser={id,handle:"@"+id.toLowerCase()+".hayid",name:String(c.name||"HAYER member").slice(0,80)};
-  try{localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser))}catch{}
-  hayidRender();if(s)s.textContent="Ինքնությունը հաստատված է։";if(authStatus)authStatus.textContent="Մուտքը հաջողվեց։ Բարի գալուստ։";enterHayerApp();
- }catch(e){hayidUser=null;hayidRender();if(s)s.textContent="Մուտքի սխալ․ "+e.message;if(authStatus)authStatus.textContent="Չհաջողվեց մուտք գործել։ Փորձիր կրկին։"}
-}
+const HAYER_API="https://hayer-api.araratavetisyan777999.workers.dev";
+async function hayidCredential(response){try{await hayidVerify(response.credential);const r=await fetch(HAYER_API+"/api/auth/google",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({credential:response.credential,nonce:hayidNonce})}),d=await r.json();if(!r.ok)throw Error(d.error||"Մուտքը չհաջողվեց");localStorage.setItem("hayer.session.v1",d.session);hayidUser=d.user;localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();$("authStatus").textContent="Մուտքը հաջողվեց։";enterHayerApp()}catch(e){$("authStatus").textContent="Մուտքի սխալ․ "+e.message}}
 function hayidRender(){
  const p=$("hayidProfile"),b=$("hayidLogout"),g=$("hayidGoogleButton");p.replaceChildren();
  if(!hayidUser){p.classList.add("hidden");b.classList.add("hidden");g.classList.remove("hidden");return}
@@ -213,46 +195,30 @@ function hayidInit(){
  $("hayidLogout").onclick=()=>{hayidUser=null;try{localStorage.removeItem("hayer.hayid.profile.v1")}catch{}hayidRender();s.textContent="Դուրս եկար այս սարքից։"};
  if(!HAYID_GOOGLE_CLIENT_ID){if(s)s.textContent="";if(g)g.innerHTML='<button class="btn primary" type="button" disabled aria-disabled="true">Մուտք / Գրանցվել</button>';const a=$("authStatus");if(a)a.textContent="Մուտքի կոճակը կակտիվանա Google-ի հանրային Client ID-ն կարգավորելուց հետո։";return}
  hayidNonce=hayidRandomNonce();const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
- script.onload=()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:false});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const a=$("authStatus");if(a)a.textContent="Մուտք գործիր՝ HAYID ստանալու համար։"};
+ script.onload=async()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:true});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const restored=await restoreHayerSession();if(!restored)google.accounts.id.prompt()};
  script.onerror=()=>{if(s)s.textContent="Google Sign-In գրադարանը չբեռնվեց։";const a=$("authStatus");if(a)a.textContent="Մուտքի ծառայությունը ժամանակավորապես անհասանելի է։"};document.head.appendChild(script);
 }
 hayidInit();
 
-function enterHayerApp(){
- if(!hayidUser)return;
- document.body.classList.remove("auth-mode");
- $("authScreen").style.display="none";
- $("hayerApp").style.display="block";
- $("appUserName").textContent=hayidUser.name;
- $("appUserId").textContent=hayidUser.handle;
- $("appProfileName").textContent=hayidUser.name;
- $("appProfileId").textContent=hayidUser.handle;
- showAppView("feed");
- syncAppFeed();
-}
-function showAppView(view){
- ["feed","chat","community","profile"].forEach(v=>{$("appView"+v.charAt(0).toUpperCase()+v.slice(1)).hidden=v!==view});
- document.querySelectorAll(".app-nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
- $("appViewTitle").textContent=({feed:"Feed",chat:"Chat",community:"Community",profile:"Profile"})[view]||"Feed";
- if(view==="community"){loadPublicFeed("communities");}
-}
-document.querySelectorAll(".app-nav button").forEach(b=>b.addEventListener("click",()=>showAppView(b.dataset.view)));
-function syncAppFeed(){
- const source=$("publicFeed"),feed=$("appFeedGrid"),community=$("appCommunityGrid");
- if(source&&feed)feed.innerHTML=source.innerHTML;
- if(source&&community)community.innerHTML=source.innerHTML;
-}
-const appFeedObserver=new MutationObserver(syncAppFeed);
-appFeedObserver.observe($("publicFeed"),{childList:true,subtree:true,characterData:true});
-document.querySelectorAll("[data-feed]").forEach(b=>b.addEventListener("click",()=>{
- document.querySelectorAll("[data-feed]").forEach(x=>x.classList.toggle("active",x===b));
- loadPublicFeed(b.dataset.feed);
-}));
-$("appFeedRefresh").onclick=()=>loadPublicFeed(activeFeed);
-$("appCreateBtn").onclick=()=>alert("Հրապարակումներ ստեղծելու հնարավորությունը կմիանա, երբ ընտրված հանրային ծառայությունները թույլատրեն HAYID-ով անվտանգ գրառում։");
-$("appLogout").onclick=()=>{hayidUser=null;try{localStorage.removeItem("hayer.hayid.profile.v1")}catch{}$("hayerApp").style.display="none";$("authScreen").style.display="grid";document.body.classList.add("auth-mode");const a=$("authStatus");if(a)a.textContent="Դուրս եկար։ Մուտք գործիր կրկին։";};
-
-
+async function apiFetch(path,opts={}){const token=localStorage.getItem("hayer.session.v1"),headers={...(opts.headers||{}),Authorization:"Bearer "+(token||"")};if(opts.body)headers["content-type"]="application/json";const r=await fetch(HAYER_API+path,{...opts,headers}),d=await r.json();if(!r.ok)throw Error(d.error||"Հարցումը չհաջողվեց");return d}
+function enterHayerApp(){if(!hayidUser)return;document.body.classList.remove("auth-mode");$("authScreen").style.display="none";$("hayerApp").style.display="block";$("appUserName").textContent=hayidUser.name;$("appUserId").textContent=hayidUser.handle;$("appProfileName").textContent=hayidUser.name;$("appProfileId").textContent=hayidUser.handle;showAppView("feed");loadHayerFeed();loadConversations();loadCommunities()}
+function showAppView(v){["feed","chat","community","profile"].forEach(x=>{$("appView"+x[0].toUpperCase()+x.slice(1)).hidden=x!==v});document.querySelectorAll(".app-nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("appViewTitle").textContent=({feed:"Feed",chat:"Chat",community:"Community",profile:"Profile"})[v];if(v==="chat")loadConversations();if(v==="community")loadCommunities()}
+document.querySelectorAll(".app-nav button").forEach(b=>b.onclick=()=>showAppView(b.dataset.view));
+function theme(t){document.documentElement.dataset.theme=t;localStorage.setItem("hayer.theme.v1",t);$("themeToggle").textContent=t==="light"?"☾ Մութ":"☀ Բաց"}theme(localStorage.getItem("hayer.theme.v1")==="light"?"light":"dark");$("themeToggle").onclick=()=>theme(document.documentElement.dataset.theme==="light"?"dark":"light");
+function renderPosts(rows){const g=$("appFeedGrid");g.replaceChildren();if(!rows.length){g.textContent="HAYER-ում դեռ գրառումներ չկան։ Դարձիր առաջինը։";return}for(const p of rows){const e=document.createElement("article");e.className="app-post";const h=document.createElement("b");h.textContent=p.display_name||"HAYER անդամ";e.append(h);if(p.body){const t=document.createElement("p");t.textContent=p.body;e.append(t)}let ms=[];try{ms=JSON.parse(p.media_json||"[]")}catch{}for(const m of ms){const el=document.createElement(m.type==="video"?"video":"img");el.className="app-post-media";el.src=m.url;if(m.type==="video")el.controls=true;e.append(el)}if(p.link_url){const a=document.createElement("a");a.href=p.link_url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Բացել հղումը ↗";e.append(a)}g.append(e)}}
+async function loadHayerFeed(){try{const d=await apiFetch("/api/feed?q="+encodeURIComponent($("feedSearch").value||""));renderPosts(d.posts||[])}catch(e){$("appFeedGrid").textContent=e.message}}
+$("publishPost").onclick=async()=>{try{await apiFetch("/api/posts",{method:"POST",body:JSON.stringify({body:$("postBody").value,link_url:$("postLink").value,media_url:$("postMedia").value})});$("postBody").value=$("postLink").value=$("postMedia").value="";loadHayerFeed()}catch(e){alert(e.message)}};$("feedSearchBtn").onclick=loadHayerFeed;
+let currentConversation=null;
+async function loadConversations(){try{const d=await apiFetch("/api/chat/conversations"),g=$("conversationList");g.replaceChildren();for(const c of d.conversations){const b=document.createElement("button");b.className="btn";b.textContent=c.title||"Անձնական զրույց";b.onclick=()=>openChat(c.id,c.title||"Զրույց");g.append(b)}if(!d.conversations.length)g.textContent="Դեռ զրույցներ չկան։"}catch(e){$("conversationList").textContent=e.message}}
+async function openChat(id,title){currentConversation=id;$("chatTitle").textContent=title;$("messageText").disabled=$("sendMessage").disabled=false;const d=await apiFetch("/api/chat/messages?conversation_id="+encodeURIComponent(id)),g=$("messageList");g.replaceChildren();for(const m of d.messages){const e=document.createElement("div");e.className="app-message"+(m.sender_id===hayidUser.id?" mine":"");e.textContent=m.display_name+": "+m.body;g.append(e)}}
+$("chatFindBtn").onclick=async()=>{try{const d=await apiFetch("/api/chat/find",{method:"POST",body:JSON.stringify({hayid:$("chatFindId").value})}),b=document.createElement("button");b.className="btn primary";b.textContent=d.user.name+" — Բացել չատը";b.onclick=async()=>{const c=await apiFetch("/api/chat/open",{method:"POST",body:JSON.stringify({user_id:d.user.id})});openChat(c.conversation_id,d.user.name)};$("chatFindResult").replaceChildren(b)}catch(e){$("chatFindResult").textContent=e.message}};$("chatRefresh").onclick=loadConversations;
+$("sendMessage").onclick=async()=>{try{await apiFetch("/api/chat/messages",{method:"POST",body:JSON.stringify({conversation_id:currentConversation,body:$("messageText").value})});$("messageText").value="";openChat(currentConversation,$("chatTitle").textContent)}catch(e){alert(e.message)}};
+$("createGroup").onclick=async()=>{try{const d=await apiFetch("/api/chat/group",{method:"POST",body:JSON.stringify({title:$("groupTitle").value,hayids:$("groupIds").value.split(/[,;\\n]+/).map(x=>x.trim()).filter(Boolean)})});openChat(d.conversation_id,$("groupTitle").value||"Խումբ")}catch(e){alert(e.message)}};
+async function loadCommunities(){try{const d=await apiFetch("/api/communities"),g=$("appCommunityGrid"),q=$("communitySearch").value.toLowerCase();g.replaceChildren();for(const c of d.communities.filter(x=>(x.name+" "+x.description).toLowerCase().includes(q))){const e=document.createElement("article");e.className="app-post";const h=document.createElement("h3");h.textContent=c.name;const p=document.createElement("p");p.textContent=c.description;e.append(h,p);g.append(e)}if(!g.children.length)g.textContent="Համայնքներ դեռ չկան։"}catch(e){$("appCommunityGrid").textContent=e.message}}
+$("createCommunity").onclick=async()=>{try{await apiFetch("/api/communities",{method:"POST",body:JSON.stringify({name:$("communityName").value,description:$("communityDescription").value})});loadCommunities()}catch(e){alert(e.message)}};$("communitySearchBtn").onclick=loadCommunities;
+$("copyHayid").onclick=()=>navigator.clipboard?.writeText(hayidUser.handle);
+$("appLogout").onclick=()=>{localStorage.removeItem("hayer.session.v1");hayidUser=null;google.accounts.id.disableAutoSelect();$("hayerApp").style.display="none";$("authScreen").style.display="grid";document.body.classList.add("auth-mode")};
+async function restoreHayerSession(){const t=localStorage.getItem("hayer.session.v1");if(!t)return false;try{const d=await apiFetch("/api/me");hayidUser=d.user;enterHayerApp();return true}catch{localStorage.removeItem("hayer.session.v1");return false}}
 let activeFeed="posts";
 function feedMessage(message){
   const grid=$("publicFeed");grid.replaceChildren();
