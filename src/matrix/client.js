@@ -214,13 +214,21 @@ export async function sendHayerEvent(roomId, eventType, content) {
   return requireClient().sendEvent(roomId, eventType, content, "");
 }
 
+export async function sendRoomEvent(roomId, eventType, content) {
+  const allowedStandardTypes = new Set(["m.room.message", "m.reaction"]);
+  if (!isHayerEventType(eventType) && !allowedStandardTypes.has(eventType)) {
+    throw new Error("Matrix event type is not allowed by the HAYER client.");
+  }
+  return requireClient().sendEvent(roomId, eventType, content, "");
+}
+
 export async function sendTextMessage(roomId, body) {
   const text = String(body ?? "").trim();
   if (!text) throw new Error("Հաղորդագրությունը դատարկ է։");
-  return requireClient().sendEvent(roomId, "m.room.message", {
+  return sendRoomEvent(roomId, "m.room.message", {
     msgtype: "m.text",
     body: text,
-  }, "");
+  });
 }
 
 export async function createHayerRoom(options) {
@@ -229,6 +237,13 @@ export async function createHayerRoom(options) {
 
 export async function joinMatrixRoom(roomId) {
   return requireClient().joinRoom(roomId);
+}
+
+export async function setRoomStateEvent(roomId, eventType, content, stateKey = "") {
+  if (!isHayerEventType(eventType) && !["m.room.name", "m.room.topic", "m.room.avatar"].includes(eventType)) {
+    throw new Error("Matrix state event type is not allowed by the HAYER client.");
+  }
+  return requireClient().sendStateEvent(roomId, eventType, content, stateKey);
 }
 
 export async function getJoinedRooms() {
