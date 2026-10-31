@@ -144,7 +144,7 @@ async function loadPublicFeed(kind=activeFeed){
         let communityUrl=instance.url;
         try{if(community.actor_id){const actor=new URL(community.actor_id);if(actor.protocol==="https:")communityUrl=new URL("/c/"+encodeURIComponent(community.name),actor.origin).href;}}catch{}
         const title=community.title||community.name||"Lemmy community";
-        const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim().slice(0,300);
+        const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
         const members=item.counts?.subscribers?String(item.counts.subscribers)+" բաժանորդ":"";
         grid.appendChild(makeFeedCard(title,desc,instance.name,members,communityUrl,null));
       }
