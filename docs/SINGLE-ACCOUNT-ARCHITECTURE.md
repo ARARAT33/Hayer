@@ -1,12 +1,21 @@
 # HAYER single-account and distributed data architecture
 
-> **HAYER deployment constraint:** HAYER must not require or operate its own server, VPS, database, identity provider, or storage cluster. The sections below describe protocol limits and possible integrations, not a requirement to deploy HAYER-owned infrastructure. The current product is a static client using public federated services. A HAYER ID is not a universal third-party login credential. A real HAYER-wide account with password recovery, cross-device sync, or SSO requires a trusted identity provider; it cannot be securely implemented by a static GitHub Pages site alone.
+> **HAYER deployment constraint:** HAYER must not require or operate its own server, VPS, database, identity provider, or storage cluster. The sections below describe protocol limits and possible integrations, not a requirement to deploy HAYER-owned infrastructure. The current product is a static client using public federated services. A HAYER ID is not a universal third-party login credential. A real HAYER-wide account with password recovery, cross-device sync, or SSO requires a trusted identity provider; it cannot be securely implemented by a static GitHub Pages site alone. The first client-side identity proof is being prepared with Google OpenID Connect (OIDC).
 
 ## Product rule
 
 A person creates exactly one account at HAYER. HAYER owns the user-facing identity, profile, permissions, settings, recovery flow, and account lifecycle. The person must not be forced to create a separate visible account on Mastodon, Matrix, Lemmy, PeerTube, or another external platform just to use HAYER.
 
 This is a product goal, not a capability that can be imposed on arbitrary public servers. Third-party operators control their servers, registration rules, APIs, retention, moderation, and availability.
+
+## Current HAYID identity proof (first implementation)
+
+- Google Identity Services provides an OpenID Connect ID token to the browser.
+- The browser validates issuer, audience, expiry, nonce, and the RS256 signature against Google public JWKS before deriving a stable pseudonymous HAYID from the immutable Google `sub` subject.
+- HAYID does not contain the email address. The Google client ID is public configuration; no client secret is allowed in the static app.
+- The repository must be configured with a Google OAuth Web Client ID whose authorized JavaScript origin includes the published HAYER Pages origin. Until that public client ID is configured, sign-in remains visibly inactive.
+- This static implementation does not provide a HAYER account database, account recovery, cross-device profile storage, or a HAYER-issued OIDC token. The profile cache is local display data only; the user must authenticate again to prove control of the identity.
+- Google identity verification does not automatically create accounts on Matrix, Mastodon, Lemmy, PeerTube, Pixelfed, or any other independent instance. Those operators must explicitly support Google login, HAYER OIDC trust, or authorized provisioning.
 
 ## Four distinct layers
 
