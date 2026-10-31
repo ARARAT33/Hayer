@@ -256,9 +256,23 @@ export async function getJoinedRooms() {
     }));
 }
 
+export function getInvitedRooms() {
+  return requireClient().getRooms()
+    .filter(room => room.getMyMembership() === "invite")
+    .map(room => ({
+      roomId: room.roomId,
+      name: room.name,
+      membership: room.getMyMembership(),
+    }));
+}
+
+export async function getRoomStateEvent(roomId, eventType, stateKey = "") {
+  return requireClient().getStateEvent(roomId, eventType, stateKey);
+}
+
 export function getRoomTimeline(roomId) {
   const room = requireClient().getRoom(roomId);
-  return room ? room.getLiveTimeline().getEvents() : [];
+  return room ? room.getLiveTimeline().getEvents().map(event => event.event) : [];
 }
 
 export function getServerBaseUrl() {
