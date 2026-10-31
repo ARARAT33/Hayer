@@ -15,6 +15,7 @@ const notificationRoutes = require('./notification.routes');
 const adminRoutes = require('./admin.routes');
 const healthRoutes = require('./health.routes');
 const registryRoutes = require('./registry.routes');
+const ageVerificationRoutes = require('./ageVerification.routes');
 
 // API version prefix
 const API_VERSION = '/v1';
@@ -51,6 +52,9 @@ router.use(`${API_VERSION}/services`, serviceRoutes);
 
 // Community routes
 router.use(`${API_VERSION}/communities`, communityRoutes);
+
+// Age Verification routes
+router.use(`${API_VERSION}/age-verification`, ageVerificationRoutes);
 
 // Notification routes
 router.use(`${API_VERSION}/notifications`, notificationRoutes);

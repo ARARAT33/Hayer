@@ -124,6 +124,99 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       allowNull: true,
       field: 'deleted_at'
+    },
+    // Հասակ (տարիներ)
+    age: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      validate: {
+        min: 13,
+        max: 120
+      }
+    },
+    // Ծննդյան ամսաթիվ
+    birthDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      field: 'birth_date'
+    },
+    // 18+ ստուգում է կատարվել
+    isAgeVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'is_age_verified'
+    },
+    // Հասակային ստուգման մեթոդ
+    ageVerificationMethod: {
+      type: DataTypes.ENUM('none', 'selfie', 'qr_code', 'document', 'manual'),
+      allowNull: false,
+      defaultValue: 'none',
+      field: 'age_verification_method'
+    },
+    // 18+ ստուգման վիճակ
+    ageVerificationStatus: {
+      type: DataTypes.ENUM('not_required', 'pending', 'verified', 'rejected', 'expired'),
+      allowNull: false,
+      defaultValue: 'not_required',
+      field: 'age_verification_status'
+    },
+    // Հասակային ստուգման սեսիայի ID
+    ageVerificationSessionId: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      field: 'age_verification_session_id'
+    },
+    // Սարքը ունի տեսախցիկ
+    hasCamera: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      field: 'has_camera'
+    },
+    // Ներածական լեզու (hy, en, ru, etc.)
+    language: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      defaultValue: 'hy',
+      validate: {
+        isIn: [['hy', 'en', 'ru', 'fr', 'de', 'es', 'it', 'ar']]
+      }
+    },
+    // Նշաններ (JSON)
+    preferences: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    },
+    // Ակտիվ սեսիաներ
+    activeSessions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      field: 'active_sessions'
+    },
+    // Վերջին ակտիվություն
+    lastActivityAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'last_activity_at'
+    },
+    // Ակաունթի տիպ ('personal', 'business', 'organization', 'government')
+    accountType: {
+      type: DataTypes.ENUM('personal', 'business', 'organization', 'government'),
+      allowNull: false,
+      defaultValue: 'personal',
+      field: 'account_type'
+    },
+    // Գնալոգիական ինֆորմացիա
+    profileCompleteness: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 100
+      },
+      field: 'profile_completeness'
     }
   }, {
     tableName: 'users',
@@ -147,6 +240,21 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
         fields: ['is_verified']
+      },
+      {
+        fields: ['is_age_verified']
+      },
+      {
+        fields: ['age']
+      },
+      {
+        fields: ['age_verification_status']
+      },
+      {
+        fields: ['language']
+      },
+      {
+        fields: ['account_type']
       },
       {
         fields: ['created_at']

@@ -43,6 +43,9 @@ const Profile = require('./profile.model.js')(sequelize, DataTypes);
 const Role = require('./role.model.js')(sequelize, DataTypes);
 const Permission = require('./permission.model.js')(sequelize, DataTypes);
 const UserRole = require('./userRole.model.js')(sequelize, DataTypes);
+const AgeVerification = require('./ageVerification.model.js')(sequelize, DataTypes);
+const QRCode = require('./qrCode.model.js')(sequelize, DataTypes);
+const SelfieVerification = require('./selfieVerification.model.js')(sequelize, DataTypes);
 const Service = require('./service.model.js')(sequelize, DataTypes);
 const ServiceInstance = require('./serviceInstance.model.js')(sequelize, DataTypes);
 const Node = require('./node.model.js')(sequelize, DataTypes);
@@ -128,6 +131,23 @@ const defineRelationships = () => {
   User.belongsToMany(Community, { through: 'CommunityMembers', foreignKey: 'userId' });
   Community.belongsToMany(User, { through: 'CommunityMembers', foreignKey: 'communityId' });
 
+  // Age Verification relationships
+  User.hasOne(AgeVerification, { foreignKey: 'userId', onDelete: 'CASCADE' });
+  AgeVerification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+  User.hasMany(SelfieVerification, { foreignKey: 'userId', onDelete: 'CASCADE' });
+  SelfieVerification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+  // QR Code relationships
+  User.hasMany(QRCode, { foreignKey: 'createdBy', onDelete: 'SET NULL' });
+  QRCode.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+  User.hasMany(QRCode, { foreignKey: 'forUserId', onDelete: 'SET NULL' });
+  QRCode.belongsTo(User, { foreignKey: 'forUserId', as: 'targetUser' });
+
+  User.hasMany(QRCode, { foreignKey: 'usedBy', onDelete: 'SET NULL' });
+  QRCode.belongsTo(User, { foreignKey: 'usedBy', as: 'user' });
+
   // OAuth relationships
   ServiceInstance.hasMany(OAuthToken, { foreignKey: 'serviceInstanceId', onDelete: 'CASCADE' });
   OAuthToken.belongsTo(ServiceInstance, { foreignKey: 'serviceInstanceId' });
@@ -168,6 +188,9 @@ module.exports = {
   Role,
   Permission,
   UserRole,
+  AgeVerification,
+  QRCode,
+  SelfieVerification,
   Service,
   ServiceInstance,
   Node,

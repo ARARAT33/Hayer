@@ -65,6 +65,31 @@ module.exports = (sequelize, DataTypes) => {
         isIn: [['public', 'private', 'invite_only', 'restricted']]
       }
     },
+    // Հասակային սահմանափակում (18+)
+    isAgeRestricted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'is_age_restricted'
+    },
+    // Նվազագույն հասակ (եթե isAgeRestricted = true)
+    minAge: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 18,
+      validate: {
+        min: 13,
+        max: 120
+      },
+      field: 'min_age'
+    },
+    // Հասակային ստուգում է պարտադիր
+    requireAgeVerification: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'require_age_verification'
+    },
     category: {
       type: DataTypes.STRING(100),
       allowNull: true,
@@ -328,6 +353,15 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
         fields: ['category']
+      },
+      {
+        fields: ['is_age_restricted']
+      },
+      {
+        fields: ['min_age']
+      },
+      {
+        fields: ['require_age_verification']
       },
       {
         fields: ['is_active']
