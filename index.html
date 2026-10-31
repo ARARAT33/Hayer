@@ -28,8 +28,8 @@
 <article class="card service"><div class="service-top"><span class="icon">▣</span><span class="tag">Ֆայլեր</span></div><h3>Nextcloud</h3><p>Փաստաթղթեր, օրացույց, ֆայլերի փոխանակում և համագործակցություն։</p><a href="https://nextcloud.com/providers/" target="_blank" rel="noopener">Գտնել մատակարարներ ↗</a></article>
 <article class="card service"><div class="service-top"><span class="icon">⌘</span><span class="tag">Մասնագիտական</span></div><h3>Zulip / XMPP</h3><p>Թեմատիկ աշխատանքային քննարկումներ և այլընտրանքային հաղորդագրություններ։</p><a href="https://zulip.com/" target="_blank" rel="noopener">Zulip ↗</a></article>
 </div></section>
-<section class="section" id="network"><div class="section-head"><div><div class="eyebrow">Բաշխված ենթակառուցվածք</div><h2>Սերվերների ռեեստր</h2><div class="sub">Ցանցը պետք է ունենա բազմաթիվ անկախ տարբերակներ յուրաքանչյուր ծառայության համար։</div></div><div class="toolbar"><button class="btn" id="importBtn">Ներմուծել ռեեստրի JSON</button><input class="hidden" type="file" id="registryFile" accept=".json,application/json"><button class="btn" id="checkBtn">Ստուգել հասանելիությունը</button></div></div>
-<div class="notice">Այս նախնական տարբերակում սերվերների ցանկը դատարկ է. չենք ցուցադրում հորինված սերվերներ կամ կեղծ «առցանց» թվեր։ Ներմուծիր ստուգված ռեեստրի JSON ֆայլ, և կայքը կցուցադրի հանգույցները։ Բրաուզերի CORS սահմանափակումների պատճառով որոշ հանգույցների վիճակը կարող է մնալ «անհայտ», ոչ թե սխալմամբ նշվել որպես խափանված։</div>
+<section class="section" id="network"><div class="section-head"><div><div class="eyebrow">Բաշխված ենթակառուցվածք</div><h2>Սերվերների ռեեստր</h2><div class="sub">Ցանցը պետք է ունենա բազմաթիվ անկախ տարբերակներ յուրաքանչյուր ծառայության համար։</div></div><div class="toolbar"><button class="btn" id="discoverBtn">Գտնել բաց սերվերներ</button><button class="btn" id="importBtn">Ներմուծել ռեեստրի JSON</button><input class="hidden" type="file" id="registryFile" accept=".json,application/json"><button class="btn" id="checkBtn">Ստուգել հասանելիությունը</button></div></div>
+<div class="notice">HAYER-ը սեփական սերվեր չի պահանջում։ Հանրային Matrix և PeerTube կատալոգները թարմացվում են GitHub Actions-ով, իսկ վերջին հրապարակված ռեեստրը հասանելի է կայքից։ Գրանցման բաց լինելը և ծառայության վիճակը առանձին ստուգվում են. «անհայտ»-ը չի նշանակում «խափանված»։ Արտաքին հաշիվների ու գրառումների հնարավորությունները կախված են տվյալ օպերատորի կանոններից։</div>
 <div class="toolbar" style="margin:14px 0"><input id="serverSearch" placeholder="Որոնել սերվեր, դոմեյն կամ ծառայություն…"><select id="typeFilter"><option value="">Բոլոր ծառայությունները</option><option>mastodon</option><option>matrix</option><option>lemmy</option><option>peertube</option><option>pixelfed</option><option>xmpp</option><option>nextcloud</option><option>discourse</option><option>mobilizon</option></select><select id="stateFilter"><option value="">Բոլոր վիճակները</option><option value="up">Հասանելի</option><option value="down">Անհասանելի</option><option value="unknown">Անհայտ</option></select></div>
 <div class="server-list" id="serverList"><div class="empty">Սերվերների ռեեստրը դեռ ներմուծված չէ։</div></div>
 </section>
@@ -60,7 +60,24 @@ $("importBtn").onclick=()=>$("registryFile").click();
 $("registryFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());const arr=Array.isArray(data)?data:data.nodes;if(!Array.isArray(arr))throw Error("JSON-ը պետք է պարունակի nodes զանգված։");const parsed=arr.map(cleanNode).filter(Boolean);if(!parsed.length)throw Error("Վավեր հանգույցներ չեն գտնվել։");const merged=new Map(nodes.map(n=>[n.id,n]));parsed.forEach(n=>merged.set(n.id,n));nodes=[...merged.values()];save();render();alert(parsed.length+" հանգույց ներմուծվեց։")}catch(err){alert("Ներմուծման սխալ․ "+err.message)}e.target.value=""};
 $("checkBtn").onclick=async()=>{const candidates=nodes.filter(n=>n.statusUrl);if(!candidates.length){alert("Այս ռեեստրում statusUrl դաշտով հանգույց չկա։ Առանց ստուգման հասցեի կամ CORS թույլտվության բրաուզերը չի կարող վստահելի վիճակ որոշել։");return}const btn=$("checkBtn");btn.disabled=true;btn.textContent="Ստուգվում է…";await Promise.all(candidates.map(async n=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);try{const r=await fetch(n.statusUrl,{method:"GET",mode:"cors",cache:"no-store",signal:controller.signal});n.state=r.ok?"up":"down";n.checkedAt=new Date().toISOString()}catch{n.state="unknown";n.checkedAt=new Date().toISOString()}finally{clearTimeout(timer)}}));btn.disabled=false;btn.textContent="Ստուգել հասանելիությունը";render()};
 ["serverSearch","typeFilter","stateFilter"].forEach(id=>$(id).addEventListener(id==="serverSearch"?"input":"change",render));
+async function loadPublishedRegistry(showErrors=false){
+  const button=$("discoverBtn");
+  if(button){button.disabled=true;button.textContent="Որոնվում է…"}
+  try{
+    const response=await fetch("./registry.json?ts="+Date.now(),{cache:"no-store",headers:{Accept:"application/json"}});
+    if(!response.ok)throw new Error("Հրապարակված ռեեստրը դեռ հասանելի չէ։");
+    const data=await response.json();
+    if(!Array.isArray(data.nodes))throw new Error("Ռեեստրի ձևաչափը սխալ է։");
+    const merged=new Map(nodes.map(n=>[n.id,n]));
+    data.nodes.map(cleanNode).filter(Boolean).forEach(n=>merged.set(n.id,n));
+    nodes=[...merged.values()];save();render();
+    if(showErrors)alert(data.nodes.length+" հանրային գրառում ստուգվեց ռեեստրից։");
+  }catch(error){if(showErrors)alert("Չհաջողվեց թարմացնել ռեեստրը․ "+error.message)}
+  finally{if(button){button.disabled=false;button.textContent="Գտնել բաց սերվերներ"}}
+}
+$("discoverBtn").onclick=()=>loadPublishedRegistry(true);
 load();
+loadPublishedRegistry(false);
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
 </body></html>
