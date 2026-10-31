@@ -1,0 +1,31 @@
+import {
+  discoverHomeserver,
+  loginWithPassword,
+  registerAccount,
+  resumeSession,
+  stopActiveClient,
+  getActiveClient,
+  getSyncState,
+  sendHayerEvent,
+  sendTextMessage,
+  createHayerRoom,
+  joinMatrixRoom,
+  getJoinedRooms,
+  getRoomTimeline,
+} from "./client.js";
+
+window.HayerMatrixSDK = Object.freeze({
+  discoverHomeserver,
+  loginWithPassword,
+  registerAccount,
+  resumeSession,
+  stopActiveClient,
+  getActiveClient,
+  getSyncState,
+  sendHayerEvent,
+  sendTextMessage,
+  createHayerRoom,
+  joinMatrixRoom,
+  getJoinedRooms,
+  getRoomTimeline,
+});
