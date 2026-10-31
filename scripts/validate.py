@@ -72,6 +72,7 @@ subprocess.run(["node", "--check", str(root / "sw.js")], check=True)
 subprocess.run(["node", str(root / "scripts" / "build-pages.mjs")], check=True)
 for asset in ["index.html", "registry.json", "manifest.webmanifest", "sw.js", "icon.svg"]:
     assert (root / "dist" / asset).is_file(), f"Missing Pages artifact: {asset}"
+assert (root / "dist" / "matrix-sdk.js").is_file(), "Matrix SDK browser bundle must be included in Pages build"
 assert not (root / "dist" / "backend").exists(), "Backend source must not be published as static assets"
 print("HAYER static and Pages build validation passed.")
 
