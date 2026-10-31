@@ -51,7 +51,7 @@ const STORAGE_KEY="hayer.registry.v1";
 const $=id=>document.getElementById(id);
 let nodes=[];
 const allowed=new Set(["mastodon","matrix","lemmy","peertube","pixelfed","xmpp","nextcloud","discourse","mobilizon","zulip","humhub","rocketchat"]);
-function safeUrl(value){try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:null}catch{return null}}
+function safeUrl(value){try{const u=new URL(value);return u.protocol==="https:"?u.href:null}catch{return null}}
 function cleanNode(n){if(!n||typeof n!=="object")return null;const url=safeUrl(n.url);if(!url||!allowed.has(String(n.type||"").toLowerCase()))return null;return {id:String(n.id||url).slice(0,180),name:String(n.name||new URL(url).hostname).slice(0,100),type:String(n.type).toLowerCase(),url,statusUrl:safeUrl(n.statusUrl||""),region:String(n.region||"").slice(0,80),source:String(n.source||"imported").slice(0,100),registration:["open","closed","unknown"].includes(n.registration)?n.registration:"unknown",health:["healthy","unhealthy","unknown"].includes(n.health)?n.health:"unknown",verified:n.verified===true,state:"unknown",checkedAt:null}}
 function serviceSignupUrl(node){
   const paths={mastodon:"/auth/sign_up",pixelfed:"/register",peertube:"/signup",lemmy:"/signup"};
