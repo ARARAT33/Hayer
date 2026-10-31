@@ -116,6 +116,6 @@ const refreshServices=$("refreshServicesBtn");if(refreshServices)refreshServices
 load();
 renderServiceActions();
 loadPublishedRegistry(false);
-if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 </script>
 </body></html>
