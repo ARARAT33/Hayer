@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "generatedAt": "2026-10-31T10:28:52.904Z",
+  "sources": [
+    "https://servers.joinmatrix.org/servers.json",
+    "https://instances.joinpeertube.org/api/v1/instances",
+    "https://raw.githubusercontent.com/LemmyNet/lemmy-statistics/main/instances/joinlemmy.json.gz",
+    "https://mastodon.social/api/v1/instance/peers",
+    "https://pixelfed.social/api/v1/instance/peers"
+  ],
+  "nodes": [],
+  "discoveryWarnings": [
+    "Initial registry snapshot. The scheduled GitHub Actions discovery workflow will populate public instances on its next successful run."
+  ]
+}
