@@ -29,6 +29,10 @@ assert "function serviceLaunchUrl(node)" in html
 assert 'id="refreshServicesBtn"' in html
 assert "renderServiceActions();" in html
 assert "data.generatedAt" in html
+assert 'id="publicFeed"' in html
+assert 'id="feedPostsBtn"' in html
+assert 'id="feedVideosBtn"' in html
+assert "async function loadPublicFeed" in html
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
 with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as f:
