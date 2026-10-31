@@ -187,7 +187,10 @@ if (failedTypes.size) {
 }
 const deduped = [...new Map(nodes.map((item) => [item.id, item])).values()]
   .sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
-if (!deduped.length) throw new Error(`No public instances discovered; refusing to overwrite the last good registry. ${failures.join("; ")}`);\nfor (const item of deduped) {\n  if (!item.id || !item.url.startsWith("https://") || !["mastodon", "matrix", "lemmy", "peertube", "pixelfed"].includes(item.type)) throw new Error(`Invalid registry item: ${item.id || "missing id"}`);\n}
+if (!deduped.length) throw new Error(`No public instances discovered; refusing to overwrite the last good registry. ${failures.join("; ")}`);
+for (const item of deduped) {
+  if (!item.id || !item.url.startsWith("https://") || !["mastodon", "matrix", "lemmy", "peertube", "pixelfed"].includes(item.type)) throw new Error(`Invalid registry item: ${item.id || "missing id"}`);
+}
 const registry = {
   version: 2,
   generatedAt: new Date().toISOString(),
