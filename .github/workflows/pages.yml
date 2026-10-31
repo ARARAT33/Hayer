@@ -21,10 +21,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      - name: Assemble public site
+        run: node scripts/build-pages.mjs
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
