@@ -211,7 +211,7 @@ export async function sendHayerEvent(roomId, eventType, content) {
   if (!isHayerEventType(eventType)) {
     throw new Error("HAYER հավելվածի իրադարձության տեսակը վավեր չէ։");
   }
-  return requireClient().sendEvent(roomId, eventType, content, "");
+  return requireClient().sendEvent(roomId, eventType, content);
 }
 
 export async function sendRoomEvent(roomId, eventType, content) {
