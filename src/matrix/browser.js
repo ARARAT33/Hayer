@@ -13,6 +13,8 @@ import {
   createHayerRoom,
   joinMatrixRoom,
   getJoinedRooms,
+  getInvitedRooms,
+  getRoomStateEvent,
   getRoomTimeline,
 } from "./client.js";
 
@@ -31,5 +33,7 @@ window.HayerMatrixSDK = Object.freeze({
   createHayerRoom,
   joinMatrixRoom,
   getJoinedRooms,
+  getInvitedRooms,
+  getRoomStateEvent,
   getRoomTimeline,
 });
