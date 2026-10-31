@@ -129,14 +129,14 @@ async function loadPublicFeed(kind=activeFeed){
     for(const item of rows.slice(0,12)){
       if(kind==="posts"){
         const parsed=new DOMParser().parseFromString(String(item.content||""),"text/html");
-        const plain=(parsed.body.textContent||"").replace(/\\s+/g," ").trim().slice(0,420);
+        const plain=(parsed.body.textContent||"").replace(/\s+/g," ").trim().slice(0,420);
         const account=item.account?.display_name||item.account?.username||"Mastodon";
         const date=item.created_at?new Date(item.created_at).toLocaleString("hy-AM"):"";
         grid.appendChild(makeFeedCard(account,plain,instance.name,date,item.url||instance.url,null));
       }else{
         const videoUrl=item.url?new URL(item.url,instance.url).href:instance.url;
         const thumb=item.thumbnailPath?new URL(item.thumbnailPath,instance.url).href:null;
-        const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim().slice(0,300);
+        const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
         const date=item.publishedAt?new Date(item.publishedAt).toLocaleString("hy-AM"):"";
         grid.appendChild(makeFeedCard(item.name,desc,instance.name,date,videoUrl,thumb&&safeUrl(thumb)));
       }
@@ -180,6 +180,7 @@ $("discoverBtn").onclick=()=>loadPublishedRegistry(true);
 const refreshServices=$("refreshServicesBtn");if(refreshServices)refreshServices.onclick=()=>loadPublishedRegistry(true);
 load();
 renderServiceActions();
+if(nodes.length)loadPublicFeed(activeFeed);
 loadPublishedRegistry(false);
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 </script>
