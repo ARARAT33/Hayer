@@ -334,10 +334,10 @@ function hayidRender(){
  g?.classList.add("hidden");p?.classList.remove("hidden");b?.classList.remove("hidden");
  const strong=document.createElement("strong");strong.textContent=hayidUser.handle;const n=document.createElement("span");n.textContent=hayidUser.name;p?.append(strong,n);
 }
-function hayidInit(){
+async function hayidInit(){
  document.getElementById("matrixLogin").onclick=mxLogin;document.getElementById("matrixRegister").onclick=mxRegister;
  document.getElementById("hayidLogout")?.addEventListener("click",mxLogout);
- if(mxLoad())restoreHayerSession();else mxSetStatus("Մուտք գործիր Matrix հաշիվով կամ ստեղծիր հաշիվ հանրային սերվերում։");
+ if(await mxLoad())await restoreHayerSession();else mxSetStatus("Մուտք գործիր Matrix հաշիվով կամ ստեղծիր հաշիվ հանրային սերվերում։");
 }
 async function mxLogout(){try{if(window.HayerMatrixSDK)await HayerMatrixSDK.stopActiveClient({logout:true});else await mxRequest("/_matrix/client/v3/logout",{method:"POST",body:"{}"})}catch{}mx=null;hayidUser=null;await mxClearSavedSession();localStorage.removeItem(mxStoreKey);localStorage.removeItem("hayer.hayid.profile.v1");if(chatPollTimer)clearInterval(chatPollTimer);document.getElementById("hayerApp").style.display="none";document.getElementById("authScreen").style.display="grid";document.body.classList.add("auth-mode");mxSetStatus("Դուրս եկար։")}
 async function mxProfile(userId){return mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(userId))}
