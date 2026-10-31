@@ -344,8 +344,8 @@ async function mxProfile(userId){return mxRequest("/_matrix/client/v3/profile/"+
 function mxRooms(){try{return JSON.parse(localStorage.getItem(mxRoomsKey)||"{}")}catch{return {}}}
 function mxSaveRooms(r){localStorage.setItem(mxRoomsKey,JSON.stringify(r))}
 async function mxRoomState(roomId,type,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key))}
-async function mxSetState(roomId,type,content,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key),{method:"PUT",body:JSON.stringify(content)})}
-async function mxSend(roomId,type,content){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.sendHayerEvent(roomId,type,content);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
+async function mxSetState(roomId,type,content,key=""){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.setRoomStateEvent(roomId,type,content,key);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key),{method:"PUT",body:JSON.stringify(content)})}
+async function mxSend(roomId,type,content){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.sendRoomEvent(roomId,type,content);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
 async function mxTimeline(roomId,limit=100){
  const d=await mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/messages?dir=b&limit="+limit);
  return (d.chunk||[]).slice().reverse();
