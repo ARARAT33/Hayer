@@ -32,6 +32,7 @@ assert "data.generatedAt" in html
 assert 'id="publicFeed"' in html
 assert 'id="feedPostsBtn"' in html
 assert 'id="feedVideosBtn"' in html
+assert 'id="feedCommunitiesBtn"' in html
 assert "async function loadPublicFeed" in html
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
