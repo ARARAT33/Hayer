@@ -9,4 +9,5 @@ await mkdir(output, { recursive: true });
 for (const asset of assets) {
   await copyFile(new URL(asset, root), new URL(asset, output));
 }
-console.log("GitHub Pages site assembled:", assets.join(", "));
+await import("./build-matrix-sdk.mjs");
+console.log("GitHub Pages site assembled with the Matrix SDK bundle:", assets.join(", "), "matrix-sdk.js");
