@@ -63,3 +63,8 @@ The first-party Matrix SDK is connected to the browser application:
 **Important status:** this adapter is an initial foundation and is not yet wired into the currently published login/chat UI. The existing UI still uses its previous Matrix REST adapter. The Element handoff text has been removed from the HAYER login/registration screen. Registration uses the SDK and reports server interactive-authentication stages; the current form does not yet complete email/CAPTCHA stages. Do not treat E2EE, media upload, calls, or Android/Windows/Linux packaging as finished until the follow-on integration and real-device tests pass.
 
 See [the SDK implementation plan](docs/MATRIX-SDK-IMPLEMENTATION.md).
+
+
+## Համայնքների և հաղորդակցության արտադրանքի ուղղություն
+
+HAYER-ի առաջարկվող UX-ը միավորում է Reddit-ի հանրային գրառումներ/մեկնաբանություններ/քվեարկությունը, Discord-ի համայնքներ/ալիքներ/դերերը և Telegram-ի անձնական ու խմբային չատը։ Սա HAYER-ի սեփական ինտերֆեյսի մոդել է, ոչ թե այդ ծառայությունների տվյալների կամ backend-ի ավտոմատ օգտագործում։ Մանրամասն՝ [Community experience and platform decision](docs/COMMUNITY-EXPERIENCE.md)։
