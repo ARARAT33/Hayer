@@ -16,15 +16,20 @@
 - [x] Տեղային վերջին ռեեստրի cache
 - [x] CORS-aware առողջության ստուգման նախնական հիմք
 - [x] Matrix և PeerTube հանրային instance discovery
+- [x] Lemmy հանրային instance discovery՝ LemmyNet-ի հրապարակային վիճակագրական տվյալներով
+- [x] Mastodon և Pixelfed peer discovery՝ հանրային instance metadata API-ներով
+- [ ] Ամբողջական, օգտատիրոջ համար անտեսանելի ընտրության և ավտոմատ failover շերտ
 - [x] Registry aggregation և deduplication
 - [x] Scheduled public-registry refresh (յուրաքանչյուր 6 ժամը մեկ)
 - [ ] Ավտոմատ failover ըստ պրոտոկոլի
 - [ ] HAYER ID / OIDC identity provider և մեկ գրանցում
 - [ ] Ծառայությունների adapter-ներ և թույլտվություններով SSO/OAuth
-- [ ] Lemmy, Mastodon և Pixelfed հանրային կատալոգների adapter-ներ
+- [x] Lemmy, Mastodon և Pixelfed հանրային կատալոգների adapter-ների առաջին տարբերակ
 - [ ] Իրական ծառայությունների ինտեգրում և end-to-end թեստեր
 
 ## Միասնական հաշիվ և բաշխված տվյալներ
+
+HAYER-ի պահանջվող օգտատիրոջ փորձը՝ մեկ գրանցում, մեկ HAYER ID, և ոչ մի ձեռքով սերվեր/JSON/API կարգավորում։ Սակայն միայն ստատիկ GitHub Pages-ը չի կարող անվտանգ պահել հաշիվների տվյալներ կամ տրամադրել համընդհանուր OIDC մուտք։ Դրա համար անհրաժեշտ է արտաքին կառավարվող նույնականացման ծառայություն (օրինակ՝ OIDC մատակարար) և դրա թույլատրելի կոնֆիգուրացիա։ Սա դեռ չի միացված, ուստի այս տարբերակը դեռ չի տրամադրում իրական HAYER գրանցում։ Արտաքին Matrix/Mastodon/Lemmy/PeerTube հաշիվների SSO-ն հնարավոր է միայն այն instance-ներում, որոնց օպերատորները թույլատրում են այն։
 
 HAYER ID-ը HAYER-ի ներսում օգտատիրոջ միասնական անունն ու պրոֆիլի նույնացուցիչն է։ Այն ինքնաբերաբար չի դառնում Matrix, Mastodon, Lemmy կամ PeerTube հաշիվ։ Մեկ մուտք (SSO) հնարավոր է միայն այն հանրային instance-ներում, որոնց օպերատորները բացահայտորեն վստահում են համապատասխան արտաքին նույնականացման մատակարարին։ Մանրամասն՝ [հանրային ֆեդերացիայի ճարտարապետություն](./docs/PUBLIC-FEDERATION-ARCHITECTURE.md), [միասնական հաշվի սահմանափակումներ](./docs/SINGLE-ACCOUNT-ARCHITECTURE.md) և [անվտանգության մոդել](./docs/SECURITY-MODEL.md)։
 
