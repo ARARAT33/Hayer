@@ -34,6 +34,11 @@ assert 'id="feedPostsBtn"' in html
 assert 'id="feedVideosBtn"' in html
 assert 'id="feedCommunitiesBtn"' in html
 assert "async function loadPublicFeed" in html
+assert 'id="hayidGoogleButton"' in html
+assert "async function hayidVerify(jwt)" in html
+assert "crypto.subtle.verify" in html
+assert "HAYID_GOOGLE_CLIENT_ID" in html
+assert "hayer.hayid.profile.v1" in html
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
 with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as f:
