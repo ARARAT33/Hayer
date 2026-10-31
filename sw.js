@@ -1,4 +1,4 @@
-const CACHE = "hayer-shell-v2";
+const CACHE = "hayer-shell-v3";
 const CORE = ["./", "./index.html", "./registry.json", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", event => {
