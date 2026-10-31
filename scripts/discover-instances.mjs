@@ -195,6 +195,7 @@ const registry = {
   nodes: deduped,
   discoveryWarnings: failures,
 };
-await writeFile("registry.json", `${JSON.stringify(registry, null, 2)}\\n`);
+await writeFile("registry.json", `${JSON.stringify(registry, null, 2)}
+`);
 console.log(`Wrote ${deduped.length} public instances: ${Object.entries(Object.groupBy(deduped, (item) => item.type)).map(([type, items]) => `${type}=${items.length}`).join(", ")}.`);
 if (failures.length) console.warn("Some sources failed:", failures.join("; "));
