@@ -44,6 +44,7 @@ try:
 finally:
     Path(temp_name).unlink(missing_ok=True)
 subprocess.run(["node", "--check", str(root / "scripts" / "build-pages.mjs")], check=True)
+subprocess.run(["node", "--check", str(root / "sw.js")], check=True)
 subprocess.run(["node", str(root / "scripts" / "build-pages.mjs")], check=True)
 for asset in ["index.html", "registry.json", "manifest.webmanifest", "sw.js", "icon.svg"]:
     assert (root / "dist" / asset).is_file(), f"Missing Pages artifact: {asset}"
