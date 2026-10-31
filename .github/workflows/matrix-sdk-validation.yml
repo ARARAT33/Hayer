@@ -1,0 +1,35 @@
+name: HAYER Matrix SDK validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/matrix/**"
+      - "tests/matrix-client.test.js"
+      - "package.json"
+      - ".github/workflows/matrix-sdk-validation.yml"
+  pull_request:
+    paths:
+      - "src/matrix/**"
+      - "tests/matrix-client.test.js"
+      - "package.json"
+      - ".github/workflows/matrix-sdk-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  matrix-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Matrix SDK
+        run: npm install --no-audit --no-fund
+      - name: Check adapter syntax
+        run: npm run check
+      - name: Run Matrix adapter tests
+        run: npm test
