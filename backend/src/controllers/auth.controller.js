@@ -906,16 +906,16 @@ const requestEmailVerification = async (req, res) => {
  * Verify email
  */
 const verifyEmail = async (req, res) => {
-  const { token } = req.body;
+  const { token: verificationToken } = req.body;
   
-  if (!token) {
+  if (!verificationToken) {
     throw new ValidationError('Verification token is required');
   }
   
   // Find user with this verification token
   const user = await User.findOne({
     where: {
-      verificationToken: token,
+      verificationToken,
       verificationTokenExpiresAt: { [Op.gt]: new Date() }
     }
   });
