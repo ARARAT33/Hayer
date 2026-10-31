@@ -3,7 +3,7 @@
  * Build a public-only HAYER instance registry from upstream open directories.
  * Runs on GitHub Actions; HAYER does not need a VPS or an operator-owned server.
  */
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 const SOURCES = {
   matrix: "https://servers.joinmatrix.org/servers.json",
@@ -38,7 +38,8 @@ function httpsBase(value) {
 }
 
 function matrixNodes(payload) {
-  const rows = Array.isArray(payload?.public_servers) ? payload.public_servers : [];
+  if (!Array.isArray(payload?.public_servers)) throw new Error("Matrix directory returned an unexpected schema");
+  const rows = payload.public_servers;
   return rows.flatMap((row) => {
     const host = httpsBase(row.client_domain || row.server_domain);
     if (!host) return [];
@@ -67,7 +68,8 @@ async function peerTubeNodes() {
     url.searchParams.set("start", String(page * PAGE_SIZE));
     url.searchParams.set("count", String(PAGE_SIZE));
     const payload = await getJson(url);
-    const rows = Array.isArray(payload?.data) ? payload.data : [];
+    if (!Array.isArray(payload?.data)) throw new Error("PeerTube index returned an unexpected schema");
+    const rows = payload.data;
     for (const row of rows) {
       const host = httpsBase(row.host || row.domain || row.url);
       if (!host) continue;
@@ -99,9 +101,25 @@ const results = await Promise.allSettled([
 
 const nodes = [];
 const failures = [];
-for (const result of results) {
+const failedTypes = new Set();
+for (const [index, result] of results.entries()) {
   if (result.status === "fulfilled") nodes.push(...result.value);
-  else failures.push(String(result.reason?.message || result.reason));
+  else {
+    failedTypes.add(index === 0 ? "matrix" : "peertube");
+    failures.push(String(result.reason?.message || result.reason));
+  }
+}
+
+// Preserve the last known entries for a source that temporarily failed.
+if (failedTypes.size) {
+  try {
+    const previous = JSON.parse(await readFile("registry.json", "utf8"));
+    for (const node of previous.nodes || []) {
+      if (failedTypes.has(node.type)) nodes.push({ ...node, health: "unknown" });
+    }
+  } catch {
+    // First run: there is no previous snapshot to preserve.
+  }
 }
 
 const deduped = [...new Map(nodes.map((node) => [node.id, node])).values()]
