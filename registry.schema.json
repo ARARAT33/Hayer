@@ -166,6 +166,14 @@
         },
         "additionalProperties": false
       }
+    },
+    "discoveryWarnings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "description": "Non-fatal errors from public discovery sources; the last good registry is preserved for failed sources."
     }
   },
   "additionalProperties": false
