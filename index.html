@@ -284,7 +284,7 @@ function hayidInit(){
  $("hayidLogout").onclick=()=>{hayidUser=null;try{localStorage.removeItem("hayer.hayid.profile.v1")}catch{}hayidRender();s.textContent="Դուրս եկար այս սարքից։"};
  if(!HAYID_GOOGLE_CLIENT_ID){if(s)s.textContent="";if(g)g.innerHTML='<button class="btn primary" type="button" disabled aria-disabled="true">Մուտք / Գրանցվել</button>';const a=$("authStatus");if(a)a.textContent="Մուտքի կոճակը կակտիվանա Google-ի հանրային Client ID-ն կարգավորելուց հետո։";return}
  hayidNonce=hayidRandomNonce();const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
- script.onload=async()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:true});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const restored=await restoreHayerSession();if(!restored)google.accounts.id.prompt()};
+ script.onload=async()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:true});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const status=$("authStatus");if(status)status.textContent="Մուտք գործիր Google-ի հաշիվով՝ HAYER-ը շարունակելու համար։";const restored=await restoreHayerSession();if(!restored)google.accounts.id.prompt()};
  script.onerror=()=>{if(s)s.textContent="Google Sign-In գրադարանը չբեռնվեց։";const a=$("authStatus");if(a)a.textContent="Մուտքի ծառայությունը ժամանակավորապես անհասանելի է։"};document.head.appendChild(script);
 }
 hayidInit();
