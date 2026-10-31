@@ -343,7 +343,7 @@ async function mxLogout(){try{if(window.HayerMatrixSDK)await HayerMatrixSDK.stop
 async function mxProfile(userId){return mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(userId))}
 function mxRooms(){try{return JSON.parse(localStorage.getItem(mxRoomsKey)||"{}")}catch{return {}}}
 function mxSaveRooms(r){localStorage.setItem(mxRoomsKey,JSON.stringify(r))}
-async function mxRoomState(roomId,type,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key))}
+async function mxRoomState(roomId,type,key=""){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.getRoomStateEvent(roomId,type,key);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key))}
 async function mxSetState(roomId,type,content,key=""){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.setRoomStateEvent(roomId,type,content,key);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key),{method:"PUT",body:JSON.stringify(content)})}
 async function mxSend(roomId,type,content){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.sendRoomEvent(roomId,type,content);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
 async function mxTimeline(roomId,limit=100){
@@ -352,14 +352,14 @@ async function mxTimeline(roomId,limit=100){
 }
 async function mxEnsureFeed(){
  const cache=mxRooms();if(cache.feed){try{await mxRoomState(cache.feed,"m.room.name");return cache.feed}catch{delete cache.feed}}
- try{const d=await mxRequest("/_matrix/client/v3/directory/room/"+encodeURIComponent(HAYER_FEED_ALIAS));cache.feed=d.room_id;mxSaveRooms(cache);const joined=await mxJoinedRooms();if(!joined.includes(d.room_id))await mxRequest("/_matrix/client/v3/join/"+encodeURIComponent(d.room_id),{method:"POST",body:"{}"});return d.room_id}catch{}
+ try{const d=await mxRequest("/_matrix/client/v3/directory/room/"+encodeURIComponent(HAYER_FEED_ALIAS));cache.feed=d.room_id;mxSaveRooms(cache);const joined=await mxJoinedRooms();if(!joined.includes(d.room_id)){if(window.HayerMatrixSDK?.getActiveClient())await HayerMatrixSDK.joinMatrixRoom(d.room_id);else await mxRequest("/_matrix/client/v3/join/"+encodeURIComponent(d.room_id),{method:"POST",body:"{}"})}return d.room_id}catch{}
  if(mx.userId.split(":").pop()!==HAYER_HOME)throw Error("HAYER-ի ընդհանուր Feed-ը դեռ չի ստեղծվել converser.eu հանրային սերվերում։ Առաջին անդամը պետք է միացնի այն այդ սերվերից։");
  const d=await mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify({visibility:"public",room_alias_name:"hayer-feed",name:"HAYER Feed",topic:"Միայն HAYER անդամների հրապարակումներ",preset:"public_chat",initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"feed",version:1}}]})});
  cache.feed=d.room_id;mxSaveRooms(cache);return d.room_id;
 }
 async function mxCreateRoom(opts){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.createHayerRoom(opts);return mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify(opts)})}
 async function mxJoinedRooms(){if(window.HayerMatrixSDK?.getActiveClient())return (await HayerMatrixSDK.getJoinedRooms()).map(r=>r.roomId);const d=await mxRequest("/_matrix/client/v3/joined_rooms");return d.joined_rooms||[]}
-async function mxInvitedRooms(){try{const d=await mxRequest("/_matrix/client/v3/sync?timeout=0");return Object.entries(d.rooms?.invite||{}).map(([room_id,data])=>({room_id,events:data.invite_state?.events||[]}))}catch{return []}}
+async function mxInvitedRooms(){try{if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.getInvitedRooms();const d=await mxRequest("/_matrix/client/v3/sync?timeout=0");return Object.entries(d.rooms?.invite||{}).map(([room_id,data])=>({room_id,events:data.invite_state?.events||[]}))}catch{return []}}
 async function mxRoomName(roomId){try{const s=await mxRoomState(roomId,"m.room.name");return s.name||""}catch{return ""}}
 async function mxRoomKind(roomId){try{return await mxRoomState(roomId,"org.hayer.room_kind")}catch{return null}}
 async function mxGetPostEvents(roomId,type="org.hayer.post"){const events=await mxTimeline(roomId,100);return events.filter(e=>e.type===type&&e.sender&&e.content)}
