@@ -23,6 +23,7 @@
 - [x] Հանրային սերվերների բազմաղբյուր discovery և տեղային վերջին ռեեստրի cache։
 - [x] Explore բաժին՝ հանրային Matrix, Mastodon, Pixelfed, Lemmy, PeerTube և այլ ծառայությունների ավտոմատ ընտրությամբ։
 - [x] Explore-ի առանձին հանրային գրառումներ, տեսանյութեր և համայնքներ դիտելու բաժին. արտաքին նյութերը չեն խառնվում HAYER-ի սեփական Feed-ին։
+- [x] Հանրային Mastodon/PeerTube/Lemmy ընթերցման fallback՝ հաջորդ թեկնածու հանգույց փորձելով. CORS սխալը չի պիտակավորվում որպես հաստատված խափանում։
 - [x] YouTube-ի privacy-enhanced embed և արտաքին URL-ների HTTPS ստուգում։
 - [x] GitHub Actions-ով HTML/JS/JSON, duplicate-ID, registry և backend syntax ստուգումներ։
 
