@@ -1,0 +1,14 @@
+{
+  "name": "hayer-matrix-client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HAYER Matrix client foundation",
+  "scripts": {
+    "check": "node --check src/matrix/client.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "matrix-js-sdk": "^44.0.0"
+  }
+}
