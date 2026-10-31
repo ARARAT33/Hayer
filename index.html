@@ -401,7 +401,7 @@ async function restoreHayerSession(){
 }
 hayidInit();
 
-function enterHayerApp(){if(!hayidUser)return;document.body.classList.remove("auth-mode");$("authScreen").style.display="none";$("hayerApp").style.display="block";$("appUserName").textContent=hayidUser.name;$("appUserId").textContent=hayidUser.handle;$("appProfileName").textContent=hayidUser.name;$("appProfileId").textContent=hayidUser.handle;showAppView("feed");loadHayerFeed();loadConversations();loadCommunities()}
+function enterHayerApp(){if(!hayidUser)return;document.body.classList.remove("auth-mode");$("authScreen").style.display="none";$("hayerApp").style.display="block";$("appUserName").textContent=hayidUser.name;$("appUserId").textContent=hayidUser.handle;$("appProfileName").textContent=hayidUser.name;$("appProfileId").textContent=hayidUser.handle;if($("profileDisplayName"))$("profileDisplayName").value=hayidUser.name||"";if($("profileAvatar"))$("profileAvatar").value=hayidUser.avatar_url||"";showAppView("feed");loadHayerFeed();loadConversations();loadCommunities()}
 function showAppView(v){["feed","chat","community","explore","profile"].forEach(x=>{$("appView"+x[0].toUpperCase()+x.slice(1)).hidden=x!==v});document.querySelectorAll(".app-nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("appViewTitle").textContent=({feed:"Feed",chat:"Chat",community:"Community",explore:"Explore",profile:"Profile"})[v];if(v==="chat")loadConversations();if(v==="community")loadCommunities();if(v==="explore")renderExploreServices();if(v!=="chat"&&chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null}}
 function renderExploreServices(){
  const grid=$("appExploreGrid");if(!grid)return;const q=($("exploreSearch")?.value||"").trim().toLowerCase();grid.replaceChildren();
