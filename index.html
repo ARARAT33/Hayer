@@ -31,7 +31,7 @@
 </div></section>
 <section class="section" id="publicFeedSection">
   <div class="section-head"><div><div class="eyebrow">Բաց ֆեդերացիա</div><h2>Հանրային լրահոս</h2><div class="sub">Կարդա հրապարակային բովանդակություն՝ անմիջապես ընտրված հանրային հարթակներից։ Մուտք կամ HAYER հաշիվ չի պահանջվում՝ միայն այն բովանդակության համար, որը հարթակը հրապարակային է դարձրել։</div></div></div>
-  <div class="toolbar" style="margin:14px 0"><button class="btn primary" id="feedPostsBtn" type="button" aria-pressed="true">Գրառումներ</button><button class="btn" id="feedVideosBtn" type="button" aria-pressed="false">Տեսանյութեր</button><button class="btn" id="feedRefreshBtn" type="button">Թարմացնել ↻</button></div>
+  <div class="toolbar" style="margin:14px 0"><button class="btn primary" id="feedPostsBtn" type="button" aria-pressed="true">Գրառումներ</button><button class="btn" id="feedVideosBtn" type="button" aria-pressed="false">Տեսանյութեր</button><button class="btn" id="feedCommunitiesBtn" type="button" aria-pressed="false">Համայնքներ</button><button class="btn" id="feedRefreshBtn" type="button">Թարմացնել ↻</button></div>
   <div class="feed-grid" id="publicFeed" aria-live="polite"><div class="empty">Հանրային լրահոսը բեռնվում է…</div></div>
   <div class="sub" id="feedSource" style="margin-top:10px">Հրապարակային տվյալների աղբյուրը նշվում է յուրաքանչյուր թարմացման ժամանակ։</div>
 </section>
@@ -108,22 +108,22 @@ function makeFeedCard(title,description,source,date,href,imageUrl){
 }
 async function loadPublicFeed(kind=activeFeed){
   activeFeed=kind;
-  const postsButton=$("feedPostsBtn"),videosButton=$("feedVideosBtn"),refresh=$("feedRefreshBtn");
-  postsButton.setAttribute("aria-pressed",String(kind==="posts"));videosButton.setAttribute("aria-pressed",String(kind==="videos"));
-  postsButton.classList.toggle("primary",kind==="posts");videosButton.classList.toggle("primary",kind==="videos");
+  const postsButton=$("feedPostsBtn"),videosButton=$("feedVideosBtn"),communitiesButton=$("feedCommunitiesBtn"),refresh=$("feedRefreshBtn");
+  postsButton.setAttribute("aria-pressed",String(kind==="posts"));videosButton.setAttribute("aria-pressed",String(kind==="videos"));communitiesButton.setAttribute("aria-pressed",String(kind==="communities"));
+  postsButton.classList.toggle("primary",kind==="posts");videosButton.classList.toggle("primary",kind==="videos");communitiesButton.classList.toggle("primary",kind==="communities");
   refresh.disabled=true;refresh.textContent="Բեռնվում է…";
   feedMessage("Հանրային բովանդակությունը բեռնվում է…");
   try{
-    const type=kind==="posts"?"mastodon":"peertube";
+    const type=kind==="posts"?"mastodon":kind==="videos"?"peertube":"lemmy";
     const candidates=nodes.filter(n=>n.type===type&&n.state!=="down"&&n.health!=="unreachable"&&n.health!=="unhealthy");
     candidates.sort((a,b)=>(b.health==="healthy")-(a.health==="healthy")||(b.verified===true)-(a.verified===true));
     const instance=candidates[0];
-    if(!instance)throw new Error(kind==="posts"?"Հանրային Mastodon հանգույց դեռ չի հայտնաբերվել։":"Հանրային PeerTube հանգույց դեռ չի հայտնաբերվել։");
-    const endpoint=kind==="posts"?instance.url+"/api/v1/timelines/public?limit=12":instance.url+"/api/v1/videos?start=0&count=12&sort=-publishedAt";
+    if(!instance)throw new Error(kind==="posts"?"Հանրային Mastodon հանգույց դեռ չի հայտնաբերվել։":kind==="videos"?"Հանրային PeerTube հանգույց դեռ չի հայտնաբերվել։":"Հանրային Lemmy հանգույց դեռ չի հայտնաբերվել։");
+    const endpoint=kind==="posts"?instance.url+"/api/v1/timelines/public?limit=12":kind==="videos"?instance.url+"/api/v1/videos?start=0&count=12&sort=-publishedAt":instance.url+"/api/v3/community/list?type_=All&sort=Hot&limit=12";
     const response=await fetch(endpoint,{headers:{Accept:"application/json"},cache:"no-store",signal:AbortSignal.timeout(12000)});
     if(!response.ok)throw new Error("Հարթակը պատասխանեց HTTP "+response.status);
     const payload=await response.json();
-    const rows=kind==="posts"?payload:payload.data;
+    const rows=kind==="posts"?payload:kind==="videos"?payload.data:payload.communities;
     if(!Array.isArray(rows)||!rows.length)throw new Error("Այս պահին հրապարակային նյութեր չեն վերադարձվել։");
     const grid=$("publicFeed");grid.replaceChildren();
     for(const item of rows.slice(0,12)){
@@ -133,12 +133,20 @@ async function loadPublicFeed(kind=activeFeed){
         const account=item.account?.display_name||item.account?.username||"Mastodon";
         const date=item.created_at?new Date(item.created_at).toLocaleString("hy-AM"):"";
         grid.appendChild(makeFeedCard(account,plain,instance.name,date,item.url||instance.url,null));
-      }else{
+      }else if(kind==="videos"){
         const videoUrl=item.url?new URL(item.url,instance.url).href:instance.url;
         const thumb=item.thumbnailPath?new URL(item.thumbnailPath,instance.url).href:null;
         const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
         const date=item.publishedAt?new Date(item.publishedAt).toLocaleString("hy-AM"):"";
         grid.appendChild(makeFeedCard(item.name,desc,instance.name,date,videoUrl,thumb&&safeUrl(thumb)));
+      }else{
+        const community=item.community||item;
+        let communityUrl=instance.url;
+        try{if(community.actor_id){const actor=new URL(community.actor_id);if(actor.protocol==="https:")communityUrl=new URL("/c/"+encodeURIComponent(community.name),actor.origin).href;}}catch{}
+        const title=community.title||community.name||"Lemmy community";
+        const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\\s+/g," ").trim().slice(0,300);
+        const members=item.counts?.subscribers?String(item.counts.subscribers)+" բաժանորդ":"";
+        grid.appendChild(makeFeedCard(title,desc,instance.name,members,communityUrl,null));
       }
     }
     $("feedSource").textContent="Աղբյուր՝ "+instance.name+" ("+instance.type+"). Ցուցադրվում է միայն տվյալ հանգույցի հրապարակային բովանդակությունը։";
@@ -149,6 +157,7 @@ async function loadPublicFeed(kind=activeFeed){
 }
 $("feedPostsBtn").onclick=()=>loadPublicFeed("posts");
 $("feedVideosBtn").onclick=()=>loadPublicFeed("videos");
+$("feedCommunitiesBtn").onclick=()=>loadPublicFeed("communities");
 $("feedRefreshBtn").onclick=()=>loadPublicFeed(activeFeed);
 function load(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");nodes=Array.isArray(data)?data.map(cleanNode).filter(Boolean):[]}catch{nodes=[]}render();renderServiceActions()}
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(nodes.map(({state,checkedAt,...n})=>n)))}catch{}}
