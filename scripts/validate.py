@@ -39,7 +39,7 @@ assert "async function hayidVerify(jwt)" in html
 assert "crypto.subtle.verify" in html
 assert "HAYID_GOOGLE_CLIENT_ID" in html
 assert "hayer.hayid.profile.v1" in html
-ids = re.findall(r'\bid=["']([^"']+)["']', html)
+ids = re.findall(r"\bid=[\"']([^\"']+)[\"']", html)
 duplicates = sorted({value for value in ids if ids.count(value) > 1})
 assert not duplicates, f"Duplicate HTML IDs: {duplicates}"
 assert 'google.accounts.id.prompt()' not in html, "Google FedCM must not prompt automatically"
