@@ -49,3 +49,17 @@ python scripts/validate.py
 ```
 
 Ստուգման workflow-ն ստուգում է HTML/JS շարահյուսությունը և static Pages build-ը։ Դա չի փոխարինում իրական Matrix հաշիվներով բազմաօգտատեր փորձարկմանը։
+
+## Matrix SDK migration (in progress)
+
+The first-party Matrix SDK foundation has been added:
+
+- `matrix-js-sdk` is pinned through `package.json` (44.x compatible range).
+- `src/matrix/client.js` provides homeserver discovery, SDK-based password login and registration requests, Rust Crypto initialization, sync startup, HAYER event namespace checks, room helpers and message helpers.
+- Registration challenges are returned as structured UI-auth data so a future HAYER form can complete email/CAPTCHA/terms steps without sending the user to Element.
+- `tests/matrix-client.test.js` validates homeserver URL handling and HAYER event namespacing.
+- `.github/workflows/matrix-sdk-validation.yml` runs the SDK adapter checks.
+
+**Important status:** this adapter is an initial foundation and is not yet wired into the currently published login/chat UI. The existing UI still uses its previous Matrix REST adapter. The Element handoff text has been removed from the HAYER login/registration screen, but interactive registration challenges and alternate-server selection are not yet complete. Do not treat E2EE, media upload, calls, or Android/Windows/Linux packaging as finished until the follow-on integration and real-device tests pass.
+
+See [the SDK implementation plan](docs/MATRIX-SDK-IMPLEMENTATION.md).
