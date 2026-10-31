@@ -48,6 +48,11 @@ assert 'data-view="explore"' in html and 'id="appViewExplore"' in html, "Federat
 assert "function renderExploreServices()" in html, "Explore service renderer must be present"
 assert "#legacyApp{display:none!important}" in html, "Legacy portal must remain hidden after authentication"
 assert "function youTubeEmbed(value)" in html, "Safe YouTube embed helper must be present"
+assert 'id="publicExploreFeed"' in html and 'id="explorePostsBtn"' in html, "Public federation explorer feed controls must be present"
+assert 'const postLink=safeUrl(p.link_url)' in html, "HAYER post links must be HTTPS validated"
+assert 'const mediaUrl=safeUrl(m.url)' in html, "HAYER post media URLs must be HTTPS validated"
+assert 'const communityLink=safeUrl(post.link_url)' in html, "Community post links must be HTTPS validated"
+assert 'const safeImage=safeUrl(imageUrl)' in html, "Public preview images must be HTTPS validated"
 assert "navigator.share" in html, "Post sharing action must be available"
 assert 'if(nodes.length)loadPublicFeed(activeFeed)' not in html, "Hidden legacy feed must not auto-fetch on startup"
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
