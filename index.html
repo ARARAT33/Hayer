@@ -358,53 +358,58 @@ function makeFeedCard(title,description,source,date,href,imageUrl){
   return card;
 }
 async function loadPublicFeed(kind=activeFeed){
-  activeFeed=kind;
-  const postsButton=$("feedPostsBtn"),videosButton=$("feedVideosBtn"),communitiesButton=$("feedCommunitiesBtn"),refresh=$("feedRefreshBtn");
-  postsButton.setAttribute("aria-pressed",String(kind==="posts"));videosButton.setAttribute("aria-pressed",String(kind==="videos"));communitiesButton.setAttribute("aria-pressed",String(kind==="communities"));
-  postsButton.classList.toggle("primary",kind==="posts");videosButton.classList.toggle("primary",kind==="videos");communitiesButton.classList.toggle("primary",kind==="communities");
-  refresh.disabled=true;refresh.textContent="Բեռնվում է…";
-  feedMessage("Հանրային բովանդակությունը բեռնվում է…");
-  try{
-    const type=kind==="posts"?"mastodon":kind==="videos"?"peertube":"lemmy";
-    const candidates=nodes.filter(n=>n.type===type&&n.state!=="down"&&n.health!=="unreachable"&&n.health!=="unhealthy");
-    candidates.sort((a,b)=>(b.health==="healthy")-(a.health==="healthy")||(b.verified===true)-(a.verified===true));
-    const instance=candidates[0];
-    if(!instance)throw new Error(kind==="posts"?"Հանրային Mastodon հանգույց դեռ չի հայտնաբերվել։":kind==="videos"?"Հանրային PeerTube հանգույց դեռ չի հայտնաբերվել։":"Հանրային Lemmy հանգույց դեռ չի հայտնաբերվել։");
-    const endpoint=kind==="posts"?instance.url+"/api/v1/timelines/public?limit=12":kind==="videos"?instance.url+"/api/v1/videos?start=0&count=12&sort=-publishedAt":instance.url+"/api/v3/community/list?type_=All&sort=Hot&limit=12";
-    const response=await fetch(endpoint,{headers:{Accept:"application/json"},cache:"no-store",signal:AbortSignal.timeout(12000)});
-    if(!response.ok)throw new Error("Հարթակը պատասխանեց HTTP "+response.status);
+ activeFeed=kind;
+ const type=kind==="posts"?"mastodon":kind==="videos"?"peertube":"lemmy";
+ const controls=[["explorePostsBtn","posts"],["exploreVideosBtn","videos"],["exploreCommunitiesBtn","communities"]];
+ for(const [id,value] of controls){const button=$(id);if(button){button.classList.toggle("primary",value===kind);button.setAttribute("aria-pressed",String(value===kind))}}
+ const refresh=$("exploreRefreshBtn");if(refresh){refresh.disabled=true;refresh.textContent="Բեռնվում է…"}
+ feedMessage("Հանրային բովանդակությունը բեռնվում է…");
+ const candidates=nodes.filter(n=>n.type===type&&n.state!=="down"&&n.health!=="unreachable"&&n.health!=="unhealthy");
+ candidates.sort((a,b)=>((b.health==="healthy")-(a.health==="healthy"))||((b.verified===true)-(a.verified===true)));
+ const failures=[];
+ try{
+  if(!candidates.length)throw new Error("Այս ծառայության համար հանրային հանգույց չի հայտնաբերվել։");
+  let selected=null,rows=[];
+  for(const instance of candidates){
+   try{
+    const endpoint=type==="mastodon"?instance.url+"/api/v1/timelines/public?limit=12":type==="peertube"?instance.url+"/api/v1/videos?start=0&count=12&sort=-publishedAt":instance.url+"/api/v3/community/list?type_=All&sort=Hot&limit=12";
+    const response=await fetch(endpoint,{headers:{Accept:"application/json"},cache:"no-store",signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw new Error("HTTP "+response.status);
     const payload=await response.json();
-    const rows=kind==="posts"?payload:kind==="videos"?payload.data:payload.communities;
-    if(!Array.isArray(rows)||!rows.length)throw new Error("Այս պահին հրապարակային նյութեր չեն վերադարձվել։");
-    const grid=$("publicExploreFeed")||$("publicFeed");grid.replaceChildren();
-    for(const item of rows.slice(0,12)){
-      if(kind==="posts"){
-        const parsed=new DOMParser().parseFromString(String(item.content||""),"text/html");
-        const plain=(parsed.body.textContent||"").replace(/\s+/g," ").trim().slice(0,420);
-        const account=item.account?.display_name||item.account?.username||"Mastodon";
-        const date=item.created_at?new Date(item.created_at).toLocaleString("hy-AM"):"";
-        grid.appendChild(makeFeedCard(account,plain,instance.name,date,item.url||instance.url,null));
-      }else if(kind==="videos"){
-        const videoUrl=item.url?new URL(item.url,instance.url).href:instance.url;
-        const thumb=item.thumbnailPath?new URL(item.thumbnailPath,instance.url).href:null;
-        const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
-        const date=item.publishedAt?new Date(item.publishedAt).toLocaleString("hy-AM"):"";
-        grid.appendChild(makeFeedCard(item.name,desc,instance.name,date,videoUrl,thumb&&safeUrl(thumb)));
-      }else{
-        const community=item.community||item;
-        let communityUrl=instance.url;
-        try{if(community.actor_id){const actor=new URL(community.actor_id);if(actor.protocol==="https:")communityUrl=new URL("/c/"+encodeURIComponent(community.name),actor.origin).href;}}catch{}
-        const title=community.title||community.name||"Lemmy community";
-        const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
-        const members=item.counts?.subscribers?String(item.counts.subscribers)+" բաժանորդ":"";
-        grid.appendChild(makeFeedCard(title,desc,instance.name,members,communityUrl,null));
-      }
-    }
-    ($("publicExploreSource")||$("feedSource")).textContent="Աղբյուր՝ "+instance.name+" ("+instance.type+"). Ցուցադրվում է միայն տվյալ հանգույցի հրապարակային բովանդակությունը։";
-  }catch(error){
-    feedMessage("Չհաջողվեց բեռնել լրահոսը․ "+error.message+"։ Որոշ հանրային instance-ներ սահմանափակում են բրաուզերից API մուտքը (CORS) կամ պահանջում են մուտք։");
-    $("feedSource").textContent="HAYER-ը չի օգտագործում արտաքին CORS proxy և չի շրջանցում հարթակի մուտքի կամ API սահմանափակումները։";
-  }finally{refresh.disabled=false;refresh.textContent="Թարմացնել ↻"}
+    const result=type==="mastodon"?payload:type==="peertube"?payload.data:payload.communities;
+    if(!Array.isArray(result)||!result.length)throw new Error("Հրապարակային նյութեր չեն վերադարձվել");
+    selected=instance;rows=result.slice(0,12);break;
+   }catch(error){failures.push(instance.name+": "+error.message)}
+  }
+  if(!selected)throw new Error("Փորձարկված հանրային հանգույցները տվյալները չվերադարձրին։ "+failures.slice(0,2).join("; "));
+  const grid=$("publicExploreFeed")||$("publicFeed");grid.replaceChildren();
+  for(const item of rows){
+   if(type==="mastodon"){
+    const parsed=new DOMParser().parseFromString(String(item.content||""),"text/html");
+    const plain=(parsed.body.textContent||"").replace(/\s+/g," ").trim().slice(0,420);
+    const account=item.account?.display_name||item.account?.username||"Mastodon";
+    const date=item.created_at?new Date(item.created_at).toLocaleString("hy-AM"):"";
+    grid.appendChild(makeFeedCard(account,plain,selected.name,date,item.url,null));
+   }else if(type==="peertube"){
+    const videoUrl=safeUrl(item.url?new URL(item.url,selected.url).href:selected.url);
+    const thumb=safeUrl(item.thumbnailPath?new URL(item.thumbnailPath,selected.url).href:null);
+    const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
+    const date=item.publishedAt?new Date(item.publishedAt).toLocaleString("hy-AM"):"";
+    grid.appendChild(makeFeedCard(item.name,desc,selected.name,date,videoUrl,thumb));
+   }else{
+    const community=item.community||item;let communityUrl=selected.url;
+    try{if(community.actor_id){const actor=new URL(community.actor_id);if(actor.protocol==="https:")communityUrl=new URL("/c/"+encodeURIComponent(community.name),actor.origin).href}}catch{}
+    const title=community.title||community.name||"Lemmy community";
+    const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
+    const members=item.counts?.subscribers?String(item.counts.subscribers)+" բաժանորդ":"";
+    grid.appendChild(makeFeedCard(title,desc,selected.name,members,communityUrl,null));
+   }
+  }
+  $("publicExploreSource").textContent="Աղբյուր՝ "+selected.name+". Ցուցադրվում է միայն հանրային բովանդակություն։"+(failures.length?" Այլ հանգույցների մի մասը անհասանելի էր կամ CORS-ով արգելափակված։":"");
+ }catch(error){
+  feedMessage("Չհաջողվեց բեռնել հանրային նյութերը․ "+error.message);
+  $("publicExploreSource").textContent="CORS կամ ցանցային սխալը չի ապացուցում, որ սերվերը խափանված է։ HAYER-ը չի օգտագործում արտաքին CORS proxy։";
+ }finally{if(refresh){refresh.disabled=false;refresh.textContent="Թարմացնել ↻"}}
 }
 $("feedPostsBtn").onclick=()=>loadPublicFeed("posts");
 $("feedVideosBtn").onclick=()=>loadPublicFeed("videos");
