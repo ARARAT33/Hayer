@@ -149,8 +149,17 @@ button:active,.btn:active{transform:translateY(0) scale(.985)}
   <div class="eyebrow">Քո հայկական թվային համայնքը</div>
   <h1>Բարի գալուստ HAYER</h1>
   <p>Մեկ ինքնություն՝ կապվելու, զրուցելու և համայնքներ բացահայտելու համար։ Մուտք գործիր կամ ստեղծիր քո հաշիվը՝ շարունակելու համար։</p>
-  <div class="auth-google" id="hayidGoogleButton"></div>
-  <div id="authStatus" class="auth-status" role="status">Մուտքի ծառայությունը պատրաստվում է…</div>
+  <div class="app-panel" style="text-align:left;margin-top:18px">
+   <label for="matrixServer">Հանրային Matrix սերվեր</label>
+   <input id="matrixServer" class="app-field" value="converser.eu" autocomplete="url" placeholder="օր. converser.eu">
+   <label for="matrixUsername">Օգտանուն</label>
+   <input id="matrixUsername" class="app-field" autocomplete="username" placeholder="քո օգտանունը">
+   <label for="matrixPassword">Գաղտնաբառ</label>
+   <input id="matrixPassword" class="app-field" type="password" autocomplete="current-password" placeholder="Գաղտնաբառ">
+   <div class="app-compose-actions" style="margin-top:12px"><button class="btn primary" id="matrixLogin" type="button">Մուտք գործել</button><button class="btn" id="matrixRegister" type="button">Ստեղծել հաշիվ</button></div>
+  </div>
+  <div id="authStatus" class="auth-status" role="status">Մուտքը կատարվում է հանրային Matrix սերվերի միջոցով։</div>
+  <p class="auth-legal">HAYID-ը քո Matrix ID-ն է։ Սերվերի գրանցման կանոնները սահմանում է դրա անկախ օպերատորը։</p>
   <p class="auth-legal">Շարունակելով՝ հաստատում ես, որ օգտագործում ես քո սեփական հաշիվը։</p>
  </section>
 </div>
@@ -263,42 +272,133 @@ function renderServiceActions(){
   });
 }
 
-const HAYID_GOOGLE_CLIENT_ID="741485932725-e8p4qfj97i322kscf8amjqk88r4k8fkn.apps.googleusercontent.com";
-let hayidNonce=null,hayidUser=null;
-function hayidRandomNonce(){const b=new Uint8Array(32);crypto.getRandomValues(b);return [...b].map(x=>x.toString(16).padStart(2,"0")).join("")}
-function hayidDecode(s){s=s.replace(/-/g,"+").replace(/_/g,"/");return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s+"=".repeat((4-s.length%4)%4)),c=>c.charCodeAt(0))))}
-async function hayidVerify(jwt){
- const p=String(jwt||"").split(".");if(p.length!==3)throw Error("Անվավեր Google token");
- const head=hayidDecode(p[0]),c=hayidDecode(p[1]);
- if(head.alg!=="RS256"||!head.kid)throw Error("Անվավեր ստորագրության ալգորիթմ");
- if(!["https://accounts.google.com","accounts.google.com"].includes(c.iss)||c.aud!==HAYID_GOOGLE_CLIENT_ID||!c.sub||c.exp*1000<Date.now()||c.nonce!==hayidNonce)throw Error("Google ինքնության ստուգումը ձախողվեց");
- const r=await fetch("https://www.googleapis.com/oauth2/v3/certs",{cache:"no-store"});if(!r.ok)throw Error("Google ստորագրության բանալիները հասանելի չեն");
- const jwk=(await r.json()).keys.find(k=>k.kid===head.kid&&k.use==="sig");if(!jwk)throw Error("Google ստորագրության բանալին չի գտնվել");
- const key=await crypto.subtle.importKey("jwk",jwk,{name:"RSASSA-PKCS1-v1_5",hash:"SHA-256"},false,["verify"]);
- const sig=p[2].replace(/-/g,"+").replace(/_/g,"/")+"=".repeat((4-p[2].length%4)%4);
- if(!await crypto.subtle.verify("RSASSA-PKCS1-v1_5",key,Uint8Array.from(atob(sig),c=>c.charCodeAt(0)),new TextEncoder().encode(p[0]+"."+p[1])))throw Error("Google token-ի ստորագրությունն անվավեր է");
- return c;
+const HAYER_HOME="converser.eu",HAYER_FEED_ALIAS="#hayer-feed:converser.eu";
+let mx=null,hayidUser=null,currentConversation=null,chatPollTimer=null;
+const mxStoreKey="hayer.matrix.session.v1",mxRoomsKey="hayer.matrix.rooms.v1";
+function mxServer(){return (document.getElementById("matrixServer")?.value||HAYER_HOME).trim().replace(/^https?:\/\//,"").replace(/\/.*$/,"").toLowerCase()}
+function mxUserLocal(){return (document.getElementById("matrixUsername")?.value||"").trim().replace(/^@/,"").split(":")[0]}
+function mxPassword(){return document.getElementById("matrixPassword")?.value||""}
+function mxSetStatus(message){const s=document.getElementById("authStatus");if(s)s.textContent=message}
+function mxSave(){localStorage.setItem(mxStoreKey,JSON.stringify(mx))}
+function mxLoad(){try{const x=JSON.parse(localStorage.getItem(mxStoreKey)||"null");if(x&&x.base&&x.token&&x.userId){mx=x;return true}}catch{}return false}
+async function mxRequest(path,opts={}){
+ if(!mx?.base)throw Error("Matrix սերվերը կարգավորված չէ։");
+ const headers={...(opts.headers||{})};if(opts.body&&!(opts.body instanceof FormData))headers["Content-Type"]="application/json";if(mx.token)headers.Authorization="Bearer "+mx.token;
+ let response,data;try{response=await fetch(mx.base.replace(/\/$/,"")+path,{...opts,headers,cache:"no-store"});const raw=await response.text();try{data=raw?JSON.parse(raw):{}}catch{data={error:"Սերվերը վերադարձրեց ոչ JSON պատասխան։"}}}
+ catch(e){throw Error("Չհաջողվեց կապվել "+mx.base+" սերվերին․ "+e.message+"։ Ստուգիր սերվերի CORS-ը կամ ընտրիր այլ Matrix սերվեր։")}
+ if(!response.ok){const err=data.error||data.errcode||("HTTP "+response.status);const e=new Error(err);e.status=response.status;e.data=data;throw e}return data;
 }
-const HAYER_API="https://hayer-api.araratavetisyan777999.workers.dev";
-async function hayidCredential(response){try{await hayidVerify(response.credential);const r=await fetch(HAYER_API+"/api/auth/google",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({credential:response.credential,nonce:hayidNonce})}),d=await r.json();if(!r.ok)throw Error(d.error||"Մուտքը չհաջողվեց");localStorage.setItem("hayer.session.v1",d.session);hayidUser=d.user;localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();$("authStatus").textContent="Մուտքը հաջողվեց։";enterHayerApp()}catch(e){$("authStatus").textContent="Մուտքի սխալ․ "+e.message}}
+async function mxResolveBase(server){
+ const origin="https://"+server;
+ try{const r=await fetch(origin+"/.well-known/matrix/client",{cache:"no-store"});if(r.ok){const j=await r.json(),b=j?.["m.homeserver"]?.base_url;if(b)return b.replace(/\/$/,"")}}catch{}
+ return origin;
+}
+function mxSetUser(userId,token,deviceId,base){
+ mx={base,token,userId,deviceId};const local=userId.slice(1).split(":")[0];hayidUser={id:userId,handle:userId,name:local,avatar_url:""};mxSave();localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));
+}
+async function mxFinishLogin(data,base){
+ mxSetUser(data.user_id,data.access_token,data.device_id,base);
+ try{const p=await mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(mx.userId));hayidUser.name=p.displayname||mx.userId.slice(1).split(":")[0];hayidUser.avatar_url=p.avatar_url||"";localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser))}catch{}
+ hayidRender();mxSetStatus("Մուտքը հաջողվեց։ HAYID՝ "+hayidUser.handle);enterHayerApp();
+}
+async function mxLogin(){
+ const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
+ mxSetStatus("Կապվում ենք հանրային սերվերին…");
+ try{const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};const d=await mxRequest("/_matrix/client/v3/login",{method:"POST",body:JSON.stringify({type:"m.login.password",identifier:{type:"m.id.user",user:local},password,initial_device_display_name:"HAYER Web"})});await mxFinishLogin(d,base)}
+ catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+e.message+"։ Եթե հաշիվ չունես, նախ գրանցվիր սերվերի կայքում կամ Element-ում, հետո նորից մուտք գործիր։")}
+}
+async function mxRegister(){
+ const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
+ if(!/^[a-z0-9._=-]{1,64}$/i.test(local)){mxSetStatus("Օգտանունը պարունակում է չթույլատրված նշաններ։");return}
+ if(password.length<8){mxSetStatus("Գաղտնաբառը պետք է լինի առնվազն 8 նիշ։");return}
+ mxSetStatus("Ստուգում ենք՝ արդյոք սերվերը թույլատրում է հավելվածից գրանցվել…");
+ try{
+  const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};
+  const d=await mxRequest("/_matrix/client/v3/register",{method:"POST",body:JSON.stringify({username:local,password,auth:{type:"m.login.dummy"},initial_device_display_name:"HAYER Web"})});
+  if(!d.access_token)throw Error("Սերվերը հաշիվ ստեղծեց, բայց մուտքի token չվերադարձրեց։ Փորձիր Element-ով մուտք գործել։");
+  await mxFinishLogin(d,base);
+ }catch(e){
+  const detail=e.data?.flows? "Սերվերը պահանջում է լրացուցիչ գրանցման քայլ (օրինակ՝ email կամ CAPTCHA). դա հնարավոր չէ շրջանցել։ ":"";
+  mxSetStatus("Գրանցումը չհաջողվեց․ "+detail+e.message+"։ Բացիր Element-ի գրանցումը, ընտրիր նույն սերվերը՝ "+server+", ստեղծիր հաշիվ, ապա վերադարձիր և մուտք գործիր։");
+ }
+}
 function hayidRender(){
- const p=$("hayidProfile"),b=$("hayidLogout"),g=$("hayidGoogleButton");p.replaceChildren();
- if(!hayidUser){p.classList.add("hidden");b.classList.add("hidden");g.classList.remove("hidden");return}
- g.classList.add("hidden");p.classList.remove("hidden");b.classList.remove("hidden");
- const t=document.createElement("span");t.textContent="Քո HAYID-ը";const strong=document.createElement("strong");strong.textContent=hayidUser.handle;const n=document.createElement("span");n.textContent=hayidUser.name;
- const copy=document.createElement("button");copy.className="btn";copy.textContent="Պատճենել HAYID-ը";copy.onclick=()=>navigator.clipboard?.writeText(hayidUser.handle);p.append(t,strong,n,copy);
+ const p=document.getElementById("hayidProfile"),b=document.getElementById("hayidLogout"),g=document.getElementById("hayidGoogleButton");
+ if(p)p.replaceChildren();if(!hayidUser){p?.classList.add("hidden");b?.classList.add("hidden");g?.classList.remove("hidden");return}
+ g?.classList.add("hidden");p?.classList.remove("hidden");b?.classList.remove("hidden");
+ const strong=document.createElement("strong");strong.textContent=hayidUser.handle;const n=document.createElement("span");n.textContent=hayidUser.name;p?.append(strong,n);
 }
 function hayidInit(){
- const s=$("hayidStatus"),g=$("hayidGoogleButton");
- $("hayidLogout").onclick=()=>{hayidUser=null;try{localStorage.removeItem("hayer.hayid.profile.v1")}catch{}hayidRender();s.textContent="Դուրս եկար այս սարքից։"};
- if(!HAYID_GOOGLE_CLIENT_ID){if(s)s.textContent="";if(g)g.innerHTML='<button class="btn primary" type="button" disabled aria-disabled="true">Մուտք / Գրանցվել</button>';const a=$("authStatus");if(a)a.textContent="Մուտքի կոճակը կակտիվանա Google-ի հանրային Client ID-ն կարգավորելուց հետո։";return}
- hayidNonce=hayidRandomNonce();const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
- script.onload=async()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:true});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const status=$("authStatus");if(status)status.textContent="Մուտք գործիր Google-ի հաշիվով՝ HAYER-ը շարունակելու համար։";const restored=await restoreHayerSession();if(!restored){/* Sign-in starts only when the user presses the Google button. */}};
- script.onerror=()=>{if(s)s.textContent="Google Sign-In գրադարանը չբեռնվեց։";const a=$("authStatus");if(a)a.textContent="Մուտքի ծառայությունը ժամանակավորապես անհասանելի է։"};document.head.appendChild(script);
+ document.getElementById("matrixLogin").onclick=mxLogin;document.getElementById("matrixRegister").onclick=mxRegister;
+ document.getElementById("hayidLogout")?.addEventListener("click",mxLogout);
+ if(mxLoad())restoreHayerSession();else mxSetStatus("Մուտք գործիր Matrix հաշիվով կամ ստեղծիր հաշիվ հանրային սերվերում։");
+}
+async function mxLogout(){try{await mxRequest("/_matrix/client/v3/logout",{method:"POST",body:"{}"})}catch{}mx=null;hayidUser=null;localStorage.removeItem(mxStoreKey);localStorage.removeItem("hayer.hayid.profile.v1");if(chatPollTimer)clearInterval(chatPollTimer);document.getElementById("hayerApp").style.display="none";document.getElementById("authScreen").style.display="grid";document.body.classList.add("auth-mode");mxSetStatus("Դուրս եկար։")}
+async function mxProfile(userId){return mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(userId))}
+function mxRooms(){try{return JSON.parse(localStorage.getItem(mxRoomsKey)||"{}")}catch{return {}}}
+function mxSaveRooms(r){localStorage.setItem(mxRoomsKey,JSON.stringify(r))}
+async function mxRoomState(roomId,type,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key))}
+async function mxSetState(roomId,type,content,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key),{method:"PUT",body:JSON.stringify(content)})}
+async function mxSend(roomId,type,content){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
+async function mxTimeline(roomId,limit=100){
+ const d=await mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/messages?dir=b&limit="+limit);
+ return (d.chunk||[]).slice().reverse();
+}
+async function mxEnsureFeed(){
+ const cache=mxRooms();if(cache.feed){try{await mxRoomState(cache.feed,"m.room.name");return cache.feed}catch{delete cache.feed}}
+ try{const d=await mxRequest("/_matrix/client/v3/directory/room/"+encodeURIComponent(HAYER_FEED_ALIAS));cache.feed=d.room_id;mxSaveRooms(cache);return d.room_id}catch{}
+ if(mx.userId.split(":").pop()!==HAYER_HOME)throw Error("HAYER-ի ընդհանուր Feed-ը դեռ չի ստեղծվել converser.eu հանրային սերվերում։ Առաջին անդամը պետք է միացնի այն այդ սերվերից։");
+ const d=await mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify({visibility:"public",room_alias_name:"hayer-feed",name:"HAYER Feed",topic:"Միայն HAYER անդամների հրապարակումներ",preset:"public_chat",initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"feed",version:1}}]})});
+ cache.feed=d.room_id;mxSaveRooms(cache);return d.room_id;
+}
+async function mxCreateRoom(opts){return mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify(opts)})}
+async function mxJoinedRooms(){const d=await mxRequest("/_matrix/client/v3/joined_rooms");return d.joined_rooms||[]}
+async function mxRoomName(roomId){try{const s=await mxRoomState(roomId,"m.room.name");return s.name||""}catch{return ""}}
+async function mxRoomKind(roomId){try{return await mxRoomState(roomId,"org.hayer.room_kind")}catch{return null}}
+async function mxGetPostEvents(roomId,type="org.hayer.post"){const events=await mxTimeline(roomId,100);return events.filter(e=>e.type===type&&e.sender&&e.content)}
+function mxPostShape(e){return {id:e.event_id,display_name:e.sender,created_at:new Date(e.origin_server_ts||Date.now()).toISOString(),body:e.content.body||"",link_url:e.content.link_url||"",media_json:JSON.stringify(e.content.media||[]),reaction_count:0,comment_count:0}}
+async function mxApi(path,opts={}){
+ const method=(opts.method||"GET").toUpperCase(),body=opts.body?JSON.parse(opts.body):{},url=new URL("https://hayer.invalid"+path),p=url.pathname,q=url.searchParams;
+ if(p==="/api/me")return {user:{...hayidUser}};
+ if(p==="/api/feed"&&method==="GET"){const room=await mxEnsureFeed(),events=await mxGetPostEvents(room);const term=(q.get("q")||"").toLowerCase();return {posts:events.map(mxPostShape).filter(x=>(x.body+" "+x.display_name).toLowerCase().includes(term))}}
+ if(p==="/api/posts"&&method==="POST"){const room=await mxEnsureFeed();if(!body.body?.trim()&&!body.link_url&&!body.media_url)throw Error("Գրառումը դատարկ է։");const d=await mxSend(room,"org.hayer.post",{body:body.body||"",link_url:body.link_url||"",media:body.media_url?[{url:body.media_url,type:"image"}]:[],hayer_version:1});return {id:d.event_id}}
+ let m=p.match(/^\/api\/posts\/([^/]+)\/(reactions|save|comments)$/);
+ if(m){const id=decodeURIComponent(m[1]),kind=m[2],room=await mxEnsureFeed();if(kind==="save"){const saved=JSON.parse(localStorage.getItem("hayer.saved.posts")||"[]");const i=saved.indexOf(id);if(i>=0)saved.splice(i,1);else saved.push(id);localStorage.setItem("hayer.saved.posts",JSON.stringify(saved));return {saved:i<0}}
+  if(kind==="reactions"&&method==="POST")return mxSend(room,"m.reaction",{ "m.relates_to":{rel_type:"m.annotation",event_id:id,key:body.reaction||"👍"}});
+  if(kind==="comments"){if(method==="GET"){const ev=await mxTimeline(room,100);return {comments:ev.filter(e=>e.type==="org.hayer.comment"&&e.content.parent_event_id===id).map(e=>({display_name:e.sender,body:e.content.body||""}))}}if(method==="POST")return mxSend(room,"org.hayer.comment",{parent_event_id:id,body:body.body||""})}
+ }
+ if(p==="/api/chat/find"&&method==="POST"){let user=String(body.hayid||"").trim();if(!user.startsWith("@")||!user.includes(":"))throw Error("Գրիր ամբողջական HAYID-ը՝ @օգտանուն:սերվեր ձևաչափով։");const prof=await mxProfile(user);return {user:{id:user,name:prof.displayname||user,avatar_url:prof.avatar_url||""}}}
+ if(p==="/api/chat/open"&&method==="POST"){const d=await mxCreateRoom({preset:"private_chat",is_direct:true,invite:[body.user_id],initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"direct"}}]});return {conversation_id:d.room_id}}
+ if(p==="/api/chat/group"&&method==="POST"){const ids=(body.hayids||[]).map(x=>String(x).trim()).filter(x=>x.startsWith("@")&&x.includes(":"));if(!body.title?.trim()||!ids.length)throw Error("Մուտքագրիր խմբի անունը և առնվազն մեկ ամբողջական HAYID։");const d=await mxCreateRoom({preset:"private_chat",name:body.title,invite:[...new Set(ids)],initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"group",created_by:mx.userId}}]});return {conversation_id:d.room_id}}
+ if(p==="/api/chat/conversations"&&method==="GET"){const rooms=await mxJoinedRooms(),out=[];for(const id of rooms){const k=await mxRoomKind(id);if(!["direct","group"].includes(k?.kind))continue;const events=await mxTimeline(id,10);const last=events.filter(e=>e.type==="m.room.message").at(-1);out.push({id,kind:k.kind,title:await mxRoomName(id)|| (k.kind==="group"?"Խումբ":"Անձնական զրույց"),last_message:last?.content?.body||""})}return {conversations:out}}
+ if(p==="/api/chat/messages"&&method==="GET"){const id=q.get("conversation_id");if(!id)throw Error("Զրույցը ընտրված չէ։");const ev=await mxTimeline(id,100);return {messages:ev.filter(e=>e.type==="m.room.message").map(e=>({sender_id:e.sender,display_name:e.sender,body:e.content.body||"",attachment_url:e.content.url||"",kind:e.content.msgtype==="m.image"?"image":e.content.msgtype==="m.video"?"video":e.content.msgtype==="m.audio"?"voice":"text",created_at:new Date(e.origin_server_ts||Date.now()).toISOString()}))}}
+ if(p==="/api/chat/messages"&&method==="POST"){if(!body.conversation_id||!body.body?.trim()&&!body.attachment_url)throw Error("Գրիր հաղորդագրություն կամ կցիր HTTPS հղում։");return mxSend(body.conversation_id,"m.room.message",{msgtype:"m.text",body:body.body||body.attachment_url, ...(body.attachment_url?{url:body.attachment_url}:{}), "org.hayer.kind":body.kind||"text"})}
+ if(p==="/api/communities"&&method==="GET"){
+  const joined=await mxJoinedRooms(),all=new Map();for(const id of joined){const k=await mxRoomKind(id);if(k?.kind==="community"){all.set(id,{id,name:await mxRoomName(id),visibility:k.visibility||"private",description:k.description||"",is_member:true,is_owner:k.owner===mx.userId,member_count:0})}}
+  try{const d=await mxRequest("/_matrix/client/v3/publicRooms?limit=100");for(const r of d.chunk||[]){if(r.name?.startsWith("HAYER •")){let k={};try{k=await mxRoomState(r.room_id,"org.hayer.room_kind")}catch{}if(k.kind==="community")all.set(r.room_id,{id:r.room_id,name:r.name.replace(/^HAYER • /,""),description:k.description||r.topic||"",visibility:"public",is_member:joined.includes(r.room_id),is_owner:k.owner===mx.userId,member_count:r.num_joined_members||0})}}}catch{}
+  return {communities:[...all.values()]}
+ }
+ if(p==="/api/communities"&&method==="POST"){
+  const visibility=body.visibility||"public",slug=(body.name||"community").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,35)||"community";
+  const opts={name:"HAYER • "+body.name,topic:body.description||"HAYER community",visibility:visibility==="public"?"public":"private",preset:visibility==="public"?"public_chat":"private_chat",initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"community",visibility,description:body.description||"",owner:mx.userId}}]};
+  if(visibility==="public"&&mx.userId.split(":").pop()===HAYER_HOME)opts.room_alias_name="hayer-"+slug+"-"+Math.random().toString(36).slice(2,7);
+  const d=await mxCreateRoom(opts);return {id:d.room_id}
+ }
+ m=p.match(/^\/api\/communities\/([^/]+)\/(posts|join|leave)$/);
+ if(m){const id=decodeURIComponent(m[1]),action=m[2];if(action==="join"&&method==="POST"){const k=await mxRoomKind(id);if(k?.visibility!=="public")throw Error("Փակ կամ գաղտնի համայնք է․ միանալու համար խնդրիր սեփականատիրոջ հրավերը։");await mxRequest("/_matrix/client/v3/join/"+encodeURIComponent(id),{method:"POST",body:"{}"});return {requested:false}}
+  if(action==="leave"&&method==="POST")return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(id)+"/leave",{method:"POST",body:"{}"});
+  if(action==="posts"){const k=await mxRoomKind(id);if(method==="GET"){const ev=await mxGetPostEvents(id,"org.hayer.community.post");return {is_member:true,posts:ev.map(mxPostShape)}}if(method==="POST"){return mxSend(id,"org.hayer.community.post",{body:body.body||"",hayer_version:1})}}
+ }
+ m=p.match(/^\/api\/communities\/([^/]+)\/posts\/([^/]+)\/(reactions|comments)$/);
+ if(m){const room=decodeURIComponent(m[1]),id=decodeURIComponent(m[2]),kind=m[3];if(kind==="reactions"&&method==="POST")return mxSend(room,"m.reaction",{"m.relates_to":{rel_type:"m.annotation",event_id:id,key:body.reaction||"👍"}});if(kind==="comments"){const ev=await mxTimeline(room,100);if(method==="GET")return {comments:ev.filter(e=>e.type==="org.hayer.community.comment"&&e.content.parent_event_id===id).map(e=>({display_name:e.sender,body:e.content.body||""}))};if(method==="POST")return mxSend(room,"org.hayer.community.comment",{parent_event_id:id,body:body.body||""})}}
+ throw Error("Այս գործողությունը դեռ չի աջակցվում Matrix ինտեգրման մեջ։");
+}
+async function apiFetch(path,opts={}){return mxApi(path,opts)}
+async function restoreHayerSession(){
+ if(!mxLoad())return false;try{const p=await mxProfile(mx.userId);hayidUser={id:mx.userId,handle:mx.userId,name:p.displayname||mx.userId.slice(1).split(":")[0],avatar_url:p.avatar_url||""};localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();enterHayerApp();return true}catch(e){mx=null;localStorage.removeItem(mxStoreKey);mxSetStatus("Պահված մուտքը այլևս վավեր չէ։ Մուտք գործիր կրկին։");return false}
 }
 hayidInit();
 
-async function apiFetch(path,opts={}){const token=localStorage.getItem("hayer.session.v1"),headers={...(opts.headers||{}),Authorization:"Bearer "+(token||"")};if(opts.body)headers["content-type"]="application/json";const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);let r,d;try{r=await fetch(HAYER_API+path,{...opts,headers,signal:opts.signal||controller.signal,cache:"no-store"});const raw=await r.text();try{d=raw?JSON.parse(raw):{}}catch{d={error:"Սերվերը վերադարձրեց սխալ պատասխան (HTTP "+r.status+")"}}}catch(error){throw new Error(error.name==="AbortError"?"Հարցման ժամանակը լրացավ։ Փորձիր կրկին։":"API-ն անհասանելի է․ "+error.message)}finally{clearTimeout(timer)}if(!r.ok)throw Error(d.error||"Հարցումը չհաջողվեց (HTTP "+r.status+")");return d}
 function enterHayerApp(){if(!hayidUser)return;document.body.classList.remove("auth-mode");$("authScreen").style.display="none";$("hayerApp").style.display="block";$("appUserName").textContent=hayidUser.name;$("appUserId").textContent=hayidUser.handle;$("appProfileName").textContent=hayidUser.name;$("appProfileId").textContent=hayidUser.handle;showAppView("feed");loadHayerFeed();loadConversations();loadCommunities()}
 function showAppView(v){["feed","chat","community","explore","profile"].forEach(x=>{$("appView"+x[0].toUpperCase()+x.slice(1)).hidden=x!==v});document.querySelectorAll(".app-nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$("appViewTitle").textContent=({feed:"Feed",chat:"Chat",community:"Community",explore:"Explore",profile:"Profile"})[v];if(v==="chat")loadConversations();if(v==="community")loadCommunities();if(v==="explore")renderExploreServices();if(v!=="chat"&&chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null}}
 function renderExploreServices(){
