@@ -22,3 +22,7 @@ jobs:
         run: node --check scripts/discover-instances.mjs
       - name: Validate registry schema
         run: node -e "const s=require('./registry.schema.json'); if(!s.required.includes('nodes') || !s.properties.discoveryWarnings) process.exit(1)"
+      - name: Validate backend JavaScript
+        run: node backend/scripts/validate.js
+      - name: Test public registry backend logic
+        run: node --test backend/test/*.test.js
