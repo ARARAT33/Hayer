@@ -18,3 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Validate HTML assets and JSON
         run: python scripts/validate.py
+      - name: Validate public discovery script
+        run: node --check scripts/discover-instances.mjs
+      - name: Validate registry schema
+        run: node -e "const s=require('./registry.schema.json'); if(!s.required.includes('nodes') || !s.properties.discoveryWarnings) process.exit(1)"
