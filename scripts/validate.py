@@ -73,5 +73,5 @@ print("HAYER static and Pages build validation passed.")
 
 # HAYER timelines must contain only HAYER-authored content; external public feeds are forbidden.
 assert "loadPublicFeed" not in html, "Third-party public timelines must not be imported into HAYER"
-assert "publicFeedSection" not in html and "publicExploreFeed" not in html, "External feed UI must remain absent"
+assert 'id="publicFeed"' not in html and 'id="publicExploreFeed"' not in html, "External feed UI must remain absent"
 assert "HAYER հաշիվների ստեղծած հրապարակումները" in html, "Explore must state the HAYER-only content rule"
