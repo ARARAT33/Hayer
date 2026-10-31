@@ -1,19 +1,16 @@
-// Export all services
+'use strict';
+
+// Export only modules that exist in this server build. Optional subsystems must
+// not be advertised as available merely because routes were sketched for them.
 module.exports = {
   auth: require('./auth.service'),
-  user: require('./user.service'),
-  hayerId: require('./hayerId.service'),
-  profile: require('./profile.service'),
-  node: require('./node.service'),
-  operator: require('./operator.service'),
-  storage: require('./storage.service'),
-  service: require('./service.service'),
   community: require('./community.service'),
+  hayerId: require('./hayerId.service'),
+  node: require('./node.service'),
   notification: require('./notification.service'),
-  audit: require('./audit.service'),
-  encryption: require('./encryption.service'),
-  health: require('./health.service'),
-  registry: require('./registry.service'),
-  backup: require('./backup.service'),
-  monitoring: require('./monitoring.service')
+  operator: require('./operator.service'),
+  profile: require('./profile.service'),
+  service: require('./service.service'),
+  storage: require('./storage.service'),
+  publicRegistry: require('./publicRegistry.service')
 };
