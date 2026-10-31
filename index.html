@@ -159,7 +159,7 @@ button:active,.btn:active{transform:translateY(0) scale(.985)}
    <div class="app-compose-actions" style="margin-top:12px"><button class="btn primary" id="matrixLogin" type="button">Մուտք գործել</button><button class="btn" id="matrixRegister" type="button">Ստեղծել հաշիվ</button></div>
   </div>
   <div id="authStatus" class="auth-status" role="status">Մուտքը կատարվում է հանրային Matrix սերվերի միջոցով։</div>
-  <p class="auth-legal">HAYID-ը քո Matrix ID-ն է։ Եթե սերվերը պահանջում է email կամ CAPTCHA, <a href="https://app.element.io/#/register" target="_blank" rel="noopener noreferrer">գրանցվիր Element-ում</a>՝ ընտրելով նույն սերվերը, ապա վերադարձիր այստեղ։</p>
+  <p class="auth-legal">HAYID-ը քո Matrix ID-ն է։ Գրանցման լրացուցիչ քայլերը պետք է կատարվեն HAYER-ի ներսում։ Եթե ընտրված սերվերը չի աջակցում հասանելի գրանցման ընթացքին, HAYER-ը կառաջարկի այլ հանրային սերվեր։</p>
   <p class="auth-legal">Շարունակելով՝ հաստատում ես, որ օգտագործում ես քո սեփական հաշիվը։</p>
  </section>
 </div>
@@ -305,7 +305,7 @@ async function mxLogin(){
  const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
  mxSetStatus("Կապվում ենք հանրային սերվերին…");
  try{const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};const d=await mxRequest("/_matrix/client/v3/login",{method:"POST",body:JSON.stringify({type:"m.login.password",identifier:{type:"m.id.user",user:local},password,initial_device_display_name:"HAYER Web"})});await mxFinishLogin(d,base)}
- catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+e.message+"։ Եթե հաշիվ չունես, նախ գրանցվիր սերվերի կայքում կամ Element-ում, հետո նորից մուտք գործիր։")}
+ catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+e.message+"։ Եթե հաշիվ չունես, օգտագործիր HAYER-ի «Ստեղծել հաշիվ» կոճակը կամ ընտրիր գրանցումը թույլատրող այլ հանրային սերվեր։")}
 }
 async function mxRegister(){
  const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
@@ -319,7 +319,7 @@ async function mxRegister(){
   await mxFinishLogin(d,base);
  }catch(e){
   const detail=e.data?.flows? "Սերվերը պահանջում է լրացուցիչ գրանցման քայլ (օրինակ՝ email կամ CAPTCHA). դա հնարավոր չէ շրջանցել։ ":"";
-  mxSetStatus("Գրանցումը չհաջողվեց․ "+detail+e.message+"։ Բացիր Element-ի գրանցումը, ընտրիր նույն սերվերը՝ "+server+", ստեղծիր հաշիվ, ապա վերադարձիր և մուտք գործիր։");
+  mxSetStatus("Գրանցումը չհաջողվեց․ "+detail+e.message+"։ HAYER-ը դեռ չի կարող ավարտել այս սերվերի պահանջած լրացուցիչ հաստատման քայլը։ Փորձիր ընտրել գրանցումը թույլատրող այլ հանրային Matrix սերվեր։");
  }
 }
 function hayidRender(){
