@@ -1,5 +1,7 @@
 # HAYER single-account and distributed data architecture
 
+> **HAYER deployment constraint:** HAYER must not require or operate its own server, VPS, database, identity provider, or storage cluster. The sections below describe protocol limits and possible integrations, not a requirement to deploy HAYER-owned infrastructure. The current product is a static client using public federated services. A HAYER ID is not a universal third-party login credential. A real HAYER-wide account with password recovery, cross-device sync, or SSO requires a trusted identity provider; it cannot be securely implemented by a static GitHub Pages site alone.
+
 ## Product rule
 
 A person creates exactly one account at HAYER. HAYER owns the user-facing identity, profile, permissions, settings, recovery flow, and account lifecycle. The person must not be forced to create a separate visible account on Mastodon, Matrix, Lemmy, PeerTube, or another external platform just to use HAYER.
