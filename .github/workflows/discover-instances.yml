@@ -48,7 +48,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add registry.json
           git commit -m "chore(registry): refresh public federated instances"
-          git push
-          gh workflow run pages.yml --ref main
-        env:
-          GH_TOKEN: ${{ github.token }}
+          # Rebase the generated snapshot on the newest main branch so a code
+          # commit made while discovery was running is never overwritten.
+          git fetch origin main
+          if ! git rebase origin/main; then
+            git checkout --theirs registry.json
+            git add registry.json
+            GIT_EDITOR=true git rebase --continue
+          fi
+          git push origin HEAD:main
