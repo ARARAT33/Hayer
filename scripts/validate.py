@@ -53,6 +53,8 @@ assert 'const postLink=safeUrl(p.link_url)' in html, "HAYER post links must be H
 assert 'const mediaUrl=safeUrl(m.url)' in html, "HAYER post media URLs must be HTTPS validated"
 assert 'const communityLink=safeUrl(post.link_url)' in html, "Community post links must be HTTPS validated"
 assert 'const safeImage=safeUrl(imageUrl)' in html, "Public preview images must be HTTPS validated"
+assert "for(const instance of candidates)" in html, "Public feed must try fallback instances"
+assert '$("publicExploreSource").textContent="CORS' in html, "Public feed must explain CORS uncertainty"
 assert "navigator.share" in html, "Post sharing action must be available"
 assert 'if(nodes.length)loadPublicFeed(activeFeed)' not in html, "Hidden legacy feed must not auto-fetch on startup"
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
