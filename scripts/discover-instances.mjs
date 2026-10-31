@@ -15,10 +15,10 @@ const SOURCES = {
   pixelfedPeers: "https://pixelfed.social/api/v1/instance/peers",
 };
 const TIMEOUT_MS = 15000;
-const MAX_PEERTUBE_PAGES = 10;
+const MAX_PEERTUBE_PAGES = 5;
 const PAGE_SIZE = 100;
-const MAX_FEDIVERSE_PEERS = 100;
-const MAX_LEMMY_CANDIDATES = 120;
+const MAX_FEDIVERSE_PEERS = 40;
+const MAX_LEMMY_CANDIDATES = 50;
 
 async function getJson(url) {
   const response = await fetch(url, {
