@@ -173,7 +173,7 @@ button:active,.btn:active{transform:translateY(0) scale(.985)}
    <section class="app-view" id="appViewFeed"><div class="app-panel"><h2>Ի՞նչ կա նոր</h2><textarea id="postBody" class="app-field" rows="3" maxlength="5000" placeholder="Գրիր քո միտքը հայ համայնքին…"></textarea><input id="postMedia" class="app-field" type="url" placeholder="Նկարի կամ տեսանյութի HTTPS հղում"><input id="postLink" class="app-field" type="url" placeholder="YouTube, TikTok կամ այլ հղում"><p class="app-muted">Հրապարակումը կհայտնվի HAYER-ի լրահոսում։ Նկարի/տեսանյութի համար օգտագործիր HTTPS հղում։</p><div class="app-compose-actions"><span class="app-muted">HAYER-ի հրապարակում</span><button class="btn primary" id="publishPost">Հրապարակել ↗</button></div></div><div class="app-search-row"><input id="feedSearch" class="app-field" type="search" placeholder="Որոնել HAYER-ի հրապարակումներում…"><button class="btn" id="feedSearchBtn">Որոնել</button></div><div id="appFeedGrid">Բեռնվում է…</div></section>
    <section class="app-view" id="appViewChat"><div class="app-panel"><h2>Գտիր ընկերոջդ HAYID-ով</h2><div class="app-search-row"><input id="chatFindId" class="app-field" placeholder="@HAY-… կամ HAY-…"><button class="btn primary" id="chatFindBtn">Գտնել</button></div><div id="chatFindResult" class="app-muted"></div></div><div class="app-chat-layout"><div class="app-panel"><h3>Զրույցներ</h3><button class="btn" id="chatRefresh">Թարմացնել</button><div id="conversationList">Դեռ զրույցներ չկան։</div><details><summary>＋ Ստեղծել խումբ</summary><input id="groupTitle" class="app-field" placeholder="Խմբի անունը"><textarea id="groupIds" class="app-field" placeholder="HAYID-ներ՝ ստորակետով"></textarea><button class="btn primary" id="createGroup">Ստեղծել խումբ</button></details></div><div class="app-panel"><h3 id="chatTitle">Ընտրիր զրույց</h3><div id="messageList" class="app-messages">Ընտրիր ընկերոջդ։</div><input id="messageAttachment" class="app-field" type="url" placeholder="Կցորդի HTTPS հղում (ըստ ցանկության)" disabled><div class="app-send-row"><select id="messageKind" class="app-field" style="max-width:150px" disabled><option value="text">Տեքստ</option><option value="image">Նկար</option><option value="video">Տեսանյութ</option><option value="voice">Ձայն</option><option value="file">Ֆայլ</option></select><textarea id="messageText" class="app-field" placeholder="Հաղորդագրություն…" disabled></textarea><button class="btn primary" id="sendMessage" disabled>Ուղարկել</button></div><p class="app-muted">Հաղորդագրությունները թարմացվում են ավտոմատ։ Մեկ հաշիվը կարող է ուղարկել առավելագույնը 20 հաղորդագրություն 60 վայրկյանում։ Կցորդները փոխանցվում են HTTPS հղումով։</div></div></section>
    <section class="app-view" id="appViewCommunity"><div class="app-panel"><h2>Ստեղծիր հայկական համայնք</h2><input id="communityName" class="app-field" placeholder="Համայնքի անունը"><textarea id="communityDescription" class="app-field" placeholder="Նկարագրություն"></textarea><select id="communityVisibility" class="app-field"><option value="public">Բաց համայնք</option><option value="private">Փակ համայնք՝ միանալու հարցումով</option><option value="secret">Գաղտնի համայնք</option></select><button class="btn primary" id="createCommunity">Ստեղծել համայնք ＋</button><p class="app-muted">Փակ համայնքի անդամակցությունը հաստատում է սեփականատերը։ Գաղտնի համայնքը չի ցուցադրվում հանրային ցանկում։</p></div><div class="app-search-row"><input id="communitySearch" class="app-field" placeholder="Որոնել համայնքներ…"><button class="btn" id="communitySearchBtn">Որոնել</button></div><div id="appCommunityGrid" class="app-community-grid">Բեռնվում է…</div><div id="communityPostsPanel" class="app-panel" hidden></div></section>
-   <section class="app-view" id="appViewExplore" hidden><div class="app-panel"><h2>Բացահայտիր հանրային հարթակները</h2><p class="app-muted">HAYER-ը ինքնաշխատ ընտրում է հայտնաբերված հանրային ծառայության հանգույցը։ Յուրաքանչյուր հարթակի հաշիվն ու գաղտնիության կանոնները մնում են տվյալ օպերատորի վերահսկողության տակ։</p><input id="exploreSearch" class="app-field" type="search" placeholder="Որոնել ծառայություն…"><div id="appExploreGrid" class="app-community-grid"></div><p id="exploreStatus" class="app-muted" role="status"></p><div class="app-panel" style="margin-top:18px"><h3>Հանրային բացահայտում</h3><p class="app-muted">Այս բաժնի նյութերը արտաքին հանրային հարթակներից են։ Դրանք չեն խառնվում HAYER-ի հիմնական Feed-ին։</p><div class="app-feed-controls"><button class="btn" id="explorePostsBtn" type="button">Գրառումներ</button><button class="btn" id="exploreVideosBtn" type="button">Տեսանյութեր</button><button class="btn" id="exploreCommunitiesBtn" type="button">Համայնքներ</button><button class="btn" id="exploreRefreshBtn" type="button">Թարմացնել ↻</button></div><p id="publicExploreSource" class="app-muted"></p><div id="publicExploreFeed" class="feed-grid"></div></div></div></section>
+   <section class="app-view" id="appViewExplore" hidden><div class="app-panel"><h2>Բացահայտիր հանրային հարթակները</h2><p class="app-muted">HAYER-ը ինքնաշխատ ընտրում է հայտնաբերված հանրային ծառայության հանգույցը։ Յուրաքանչյուր հարթակի հաշիվն ու գաղտնիության կանոնները մնում են տվյալ օպերատորի վերահսկողության տակ։</p><input id="exploreSearch" class="app-field" type="search" placeholder="Որոնել ծառայություն…"><div id="appExploreGrid" class="app-community-grid"></div><p id="exploreStatus" class="app-muted" role="status"></p><div class="app-panel" style="margin-top:18px"><h3>HAYER բովանդակություն</h3><p class="app-muted">Այս հարթակում ցուցադրվում են միայն HAYER հաշիվների ստեղծած հրապարակումները։ Արտաքին հարթակների գրառումները, տեսանյութերն ու համայնքները չեն ներմուծվում HAYER Feed։</p></div></div></section>
    <section class="app-view" id="appViewProfile"><div class="app-panel"><h2 id="appProfileName">HAYER member</h2><p class="app-profile-id" id="appProfileId"></p><p class="app-muted">Քո HAYID հաշիվը։</p><button class="btn" id="copyHayid">Պատճենել HAYID-ը</button> <button class="btn" id="appLogout">Դուրս գալ</button></div></section>
   </main>
  </div>
@@ -196,12 +196,7 @@ button:active,.btn:active{transform:translateY(0) scale(.985)}
 <article class="card service" data-service="nextcloud"><div class="service-top"><span class="icon">▣</span><span class="tag">Ֆայլեր</span></div><h3>Nextcloud</h3><p>Փաստաթղթեր, օրացույց, ֆայլերի փոխանակում և համագործակցություն։</p><span class="service-note">Հանրային ցանցի ինտեգրում</span></article>
 <article class="card service" data-service="xmpp"><div class="service-top"><span class="icon">⌘</span><span class="tag">Մասնագիտական</span></div><h3>Zulip / XMPP</h3><p>Թեմատիկ աշխատանքային քննարկումներ և այլընտրանքային հաղորդագրություններ։</p><span class="service-note">Հանրային ցանցի ինտեգրում</span></article>
 </div></section>
-<section class="section" id="publicFeedSection">
-  <div class="section-head"><div><div class="eyebrow">Բաց ֆեդերացիա</div><h2>Հանրային լրահոս</h2><div class="sub">Կարդա հրապարակային բովանդակություն՝ անմիջապես ընտրված հանրային հարթակներից։ Մուտք կամ HAYER հաշիվ չի պահանջվում՝ միայն այն բովանդակության համար, որը հարթակը հրապարակային է դարձրել։</div></div></div>
-  <div class="toolbar" style="margin:14px 0"><button class="btn primary" id="feedPostsBtn" type="button" aria-pressed="true">Գրառումներ</button><button class="btn" id="feedVideosBtn" type="button" aria-pressed="false">Տեսանյութեր</button><button class="btn" id="feedCommunitiesBtn" type="button" aria-pressed="false">Համայնքներ</button><button class="btn" id="feedRefreshBtn" type="button">Թարմացնել ↻</button></div>
-  <div class="feed-grid" id="publicFeed" aria-live="polite"><div class="empty">Հանրային լրահոսը բեռնվում է…</div></div>
-  <div class="sub" id="feedSource" style="margin-top:10px">Հրապարակային տվյալների աղբյուրը նշվում է յուրաքանչյուր թարմացման ժամանակ։</div>
-</section>
+<!-- External timelines are excluded: HAYER feeds contain HAYER-authored posts only. -->
 <section class="section hidden" id="network" aria-hidden="true"><div class="section-head"><div><div class="eyebrow">Բաշխված ենթակառուցվածք</div><h2>Սերվերների ռեեստր</h2><div class="sub">Ցանցը պետք է ունենա բազմաթիվ անկախ տարբերակներ յուրաքանչյուր ծառայության համար։</div></div><div class="toolbar"><button class="btn" id="discoverBtn">Գտնել բաց սերվերներ</button><button class="btn" id="importBtn">Ներմուծել ռեեստրի JSON</button><input class="hidden" type="file" id="registryFile" accept=".json,application/json"><button class="btn" id="checkBtn">Ստուգել հասանելիությունը</button></div></div>
 <div class="notice">HAYER-ը սեփական սերվեր չի պահանջում։ Հանրային Matrix և PeerTube կատալոգները թարմացվում են GitHub Actions-ով, իսկ վերջին հրապարակված ռեեստրը հասանելի է կայքից։ Գրանցման բաց լինելը և ծառայության վիճակը առանձին ստուգվում են. «անհայտ»-ը չի նշանակում «խափանված»։ Արտաքին հաշիվների ու գրառումների հնարավորությունները կախված են տվյալ օպերատորի կանոններից։</div>
 <div class="toolbar" style="margin:14px 0"><input id="serverSearch" placeholder="Որոնել սերվեր, դոմեյն կամ ծառայություն…"><select id="typeFilter"><option value="">Բոլոր ծառայությունները</option><option>mastodon</option><option>matrix</option><option>lemmy</option><option>peertube</option><option>pixelfed</option><option>xmpp</option><option>nextcloud</option><option>discourse</option><option>mobilizon</option></select><select id="stateFilter"><option value="">Բոլոր վիճակները</option><option value="up">Հասանելի</option><option value="down">Անհասանելի</option><option value="unknown">Անհայտ</option></select></div>
@@ -368,65 +363,6 @@ function makeFeedCard(title,description,source,date,href,imageUrl){
   const link=safeUrl(href);if(link){const anchor=document.createElement("a");anchor.href=link;anchor.target="_blank";anchor.rel="noopener noreferrer";anchor.textContent="Բացել սկզբնաղբյուրը ↗";card.appendChild(anchor)}
   return card;
 }
-async function loadPublicFeed(kind=activeFeed){
- activeFeed=kind;
- const type=kind==="posts"?"mastodon":kind==="videos"?"peertube":"lemmy";
- const controls=[["explorePostsBtn","posts"],["exploreVideosBtn","videos"],["exploreCommunitiesBtn","communities"]];
- for(const [id,value] of controls){const button=$(id);if(button){button.classList.toggle("primary",value===kind);button.setAttribute("aria-pressed",String(value===kind))}}
- const refresh=$("exploreRefreshBtn");if(refresh){refresh.disabled=true;refresh.textContent="Բեռնվում է…"}
- feedMessage("Հանրային բովանդակությունը բեռնվում է…");
- const candidates=nodes.filter(n=>n.type===type&&n.state!=="down"&&n.health!=="unreachable"&&n.health!=="unhealthy");
- candidates.sort((a,b)=>((b.health==="healthy")-(a.health==="healthy"))||((b.verified===true)-(a.verified===true)));
- const failures=[];
- try{
-  if(!candidates.length)throw new Error("Այս ծառայության համար հանրային հանգույց չի հայտնաբերվել։");
-  let selected=null,rows=[];
-  for(const instance of candidates){
-   try{
-    const endpoint=type==="mastodon"?instance.url+"/api/v1/timelines/public?limit=12":type==="peertube"?instance.url+"/api/v1/videos?start=0&count=12&sort=-publishedAt":instance.url+"/api/v3/community/list?type_=All&sort=Hot&limit=12";
-    const response=await fetch(endpoint,{headers:{Accept:"application/json"},cache:"no-store",signal:AbortSignal.timeout(10000)});
-    if(!response.ok)throw new Error("HTTP "+response.status);
-    const payload=await response.json();
-    const result=type==="mastodon"?payload:type==="peertube"?payload.data:payload.communities;
-    if(!Array.isArray(result)||!result.length)throw new Error("Հրապարակային նյութեր չեն վերադարձվել");
-    selected=instance;rows=result.slice(0,12);break;
-   }catch(error){failures.push(instance.name+": "+error.message)}
-  }
-  if(!selected)throw new Error("Փորձարկված հանրային հանգույցները տվյալները չվերադարձրին։ "+failures.slice(0,2).join("; "));
-  const grid=$("publicExploreFeed")||$("publicFeed");grid.replaceChildren();
-  for(const item of rows){
-   if(type==="mastodon"){
-    const parsed=new DOMParser().parseFromString(String(item.content||""),"text/html");
-    const plain=(parsed.body.textContent||"").replace(/\s+/g," ").trim().slice(0,420);
-    const account=item.account?.display_name||item.account?.username||"Mastodon";
-    const date=item.created_at?new Date(item.created_at).toLocaleString("hy-AM"):"";
-    grid.appendChild(makeFeedCard(account,plain,selected.name,date,item.url,null));
-   }else if(type==="peertube"){
-    const videoUrl=safeUrl(item.url?new URL(item.url,selected.url).href:selected.url);
-    const thumb=safeUrl(item.thumbnailPath?new URL(item.thumbnailPath,selected.url).href:null);
-    const desc=String(item.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
-    const date=item.publishedAt?new Date(item.publishedAt).toLocaleString("hy-AM"):"";
-    grid.appendChild(makeFeedCard(item.name,desc,selected.name,date,videoUrl,thumb));
-   }else{
-    const community=item.community||item;let communityUrl=selected.url;
-    try{if(community.actor_id){const actor=new URL(community.actor_id);if(actor.protocol==="https:")communityUrl=new URL("/c/"+encodeURIComponent(community.name),actor.origin).href}}catch{}
-    const title=community.title||community.name||"Lemmy community";
-    const desc=String(community.description||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim().slice(0,300);
-    const members=item.counts?.subscribers?String(item.counts.subscribers)+" բաժանորդ":"";
-    grid.appendChild(makeFeedCard(title,desc,selected.name,members,communityUrl,null));
-   }
-  }
-  $("publicExploreSource").textContent="Աղբյուր՝ "+selected.name+". Ցուցադրվում է միայն հանրային բովանդակություն։"+(failures.length?" Այլ հանգույցների մի մասը անհասանելի էր կամ CORS-ով արգելափակված։":"");
- }catch(error){
-  feedMessage("Չհաջողվեց բեռնել հանրային նյութերը․ "+error.message);
-  $("publicExploreSource").textContent="CORS կամ ցանցային սխալը չի ապացուցում, որ սերվերը խափանված է։ HAYER-ը չի օգտագործում արտաքին CORS proxy։";
- }finally{if(refresh){refresh.disabled=false;refresh.textContent="Թարմացնել ↻"}}
-}
-$("feedPostsBtn").onclick=()=>loadPublicFeed("posts");
-$("feedVideosBtn").onclick=()=>loadPublicFeed("videos");
-$("feedCommunitiesBtn").onclick=()=>loadPublicFeed("communities");
-$("feedRefreshBtn").onclick=()=>loadPublicFeed(activeFeed);
-$("explorePostsBtn").onclick=()=>loadPublicFeed("posts");$("exploreVideosBtn").onclick=()=>loadPublicFeed("videos");$("exploreCommunitiesBtn").onclick=()=>loadPublicFeed("communities");$("exploreRefreshBtn").onclick=()=>loadPublicFeed(activeFeed);
 function load(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");nodes=Array.isArray(data)?data.map(cleanNode).filter(Boolean):[]}catch{nodes=[]}render();renderServiceActions()}
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(nodes.map(({state,checkedAt,...n})=>n)))}catch{}}
 function render(){const q=$("serverSearch").value.toLowerCase(),type=$("typeFilter").value,state=$("stateFilter").value;const shown=nodes.filter(n=>(!type||n.type===type)&&(!state||n.state===state)&&[n.name,n.url,n.type,n.region].join(" ").toLowerCase().includes(q));$("nodeCount").textContent=nodes.length;$("serviceCount").textContent=document.querySelectorAll(".service[data-service]").length;$("onlineCount").textContent=nodes.filter(n=>n.state==="up").length;$("healthCount").textContent=nodes.filter(n=>n.state==="unknown").length;const list=$("serverList");if(!shown.length){list.innerHTML='<div class="empty">'+(nodes.length?'Այս ֆիլտրով սերվեր չի գտնվել։':'Սերվերների ռեեստրը դեռ ներմուծված չէ։')+'</div>';return}list.innerHTML=shown.map(n=>'<div class="server"><span class="icon">⌁</span><div class="grow"><b>'+esc(n.name)+'</b><small>'+esc(n.type)+' · '+esc(n.url)+(n.region?' · '+esc(n.region):'')+'</small></div><span class="status '+n.state+'">'+({up:"Հասանելի",down:"Չի պատասխանում",unknown:"Անհայտ"}[n.state])+'</span><a class="btn" href="'+esc(n.url)+'" target="_blank" rel="noopener">Բացել ↗</a></div>').join("")}
