@@ -211,7 +211,7 @@ function hayidRender(){
 function hayidInit(){
  const s=$("hayidStatus"),g=$("hayidGoogleButton");
  $("hayidLogout").onclick=()=>{hayidUser=null;try{localStorage.removeItem("hayer.hayid.profile.v1")}catch{}hayidRender();s.textContent="Դուրս եկար այս սարքից։"};
- if(!HAYID_GOOGLE_CLIENT_ID){s.textContent="Պետք է ավելացնել Google OAuth Web Client ID-ն։ Այն հանրային նույնականացուցիչ է, գաղտնի բանալի չէ։";g.textContent="Google մուտքը կակտիվանա Client ID-ի կարգավորումից հետո։";return}
+ if(!HAYID_GOOGLE_CLIENT_ID){if(s)s.textContent="";if(g)g.innerHTML='<button class="btn primary" type="button" disabled aria-disabled="true">Մուտք / Գրանցվել</button>';const a=$("authStatus");if(a)a.textContent="Մուտքի կոճակը կակտիվանա Google-ի հանրային Client ID-ն կարգավորելուց հետո։";return}
  hayidNonce=hayidRandomNonce();const script=document.createElement("script");script.src="https://accounts.google.com/gsi/client";script.async=true;script.defer=true;
  script.onload=()=>{google.accounts.id.initialize({client_id:HAYID_GOOGLE_CLIENT_ID,callback:hayidCredential,nonce:hayidNonce,auto_select:false});google.accounts.id.renderButton(g,{theme:"outline",size:"large",shape:"pill",text:"continue_with",locale:"hy"});if(s)s.textContent="";const a=$("authStatus");if(a)a.textContent="Մուտք գործիր՝ HAYID ստանալու համար։"};
  script.onerror=()=>{if(s)s.textContent="Google Sign-In գրադարանը չբեռնվեց։";const a=$("authStatus");if(a)a.textContent="Մուտքի ծառայությունը ժամանակավորապես անհասանելի է։"};document.head.appendChild(script);
