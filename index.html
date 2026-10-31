@@ -318,7 +318,8 @@ async function mxRegister(){
  if(!requested||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
  if(!window.HayerMatrixSDK){mxSetStatus("Matrix SDK-ը դեռ չի բեռնվել։ Թարմացրու էջը և փորձիր կրկին։");return}
  if(!/^[a-z0-9._=-]{1,64}$/i.test(local)||password.length<8){mxSetStatus("Ստուգիր օգտանունը և գաղտնաբառի երկարությունը (առնվազն 8 նիշ)։");return}
- const candidates=[requested,...(requested.toLowerCase().replace(/^https?:\\/\\//,"").replace(/\\/$/,"")==="matrix.org"?[]:["matrix.org"])];
+ const requestedHost=new URL(/^https?:/i.test(requested)?requested:"https://"+requested).hostname.toLowerCase();
+ const candidates=[requested,...(requestedHost==="matrix.org"?[]:["matrix.org"])];
  let lastError=null;
  for(let i=0;i<candidates.length;i++){
   const server=candidates[i];
