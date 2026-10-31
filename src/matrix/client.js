@@ -5,6 +5,10 @@ const MATRIX_VERSIONS = "/_matrix/client/versions";
 const MATRIX_LOGIN = "/_matrix/client/v3/login";
 const HAYER_EVENT_PREFIX = "org.hayer.";
 
+export function isHayerEventType(eventType) {
+  return typeof eventType === "string" && eventType.startsWith(HAYER_EVENT_PREFIX);
+}
+
 let activeClient = null;
 
 export function normalizeHomeserver(value) {
@@ -193,7 +197,7 @@ export async function stopActiveClient({ logout = false } = {}) {
 
 export async function sendHayerEvent(roomId, eventType, content) {
   if (!activeClient) throw new Error("HAYER Matrix սեսիան ակտիվ չէ։");
-  if (!String(eventType).startsWith(HAYER_EVENT_PREFIX)) {
+  if (!isHayerEventType(eventType)) {
     throw new Error("HAYER հավելվածի իրադարձության տեսակը վավեր չէ։");
   }
   return activeClient.sendEvent(roomId, eventType, content, "");
