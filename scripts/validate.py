@@ -39,6 +39,12 @@ assert "async function hayidVerify(jwt)" in html
 assert "crypto.subtle.verify" in html
 assert "HAYID_GOOGLE_CLIENT_ID" in html
 assert "hayer.hayid.profile.v1" in html
+ids = re.findall(r'\\bid=["\']([^"\']+)["\']', html)
+duplicates = sorted({value for value in ids if ids.count(value) > 1})
+assert not duplicates, f"Duplicate HTML IDs: {duplicates}"
+assert 'google.accounts.id.prompt()' not in html, "Google FedCM must not prompt automatically"
+assert '$("appCreateBtn").onclick' in html, "Create button must open the HAYER post composer"
+assert 'if(nodes.length)loadPublicFeed(activeFeed)' not in html, "Hidden legacy feed must not auto-fetch on startup"
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
 with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as f:
