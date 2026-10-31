@@ -30,7 +30,7 @@ jobs:
         run: node scripts/discover-instances.mjs
       - name: Validate registry JSON
         run: |
-          node -e "const r=require('./registry.json'); if(!Array.isArray(r.nodes)||!r.nodes.length) process.exit(1); for(const n of r.nodes){if(!n.url.startsWith('https://')||!['matrix','peertube'].includes(n.type)) process.exit(1)}"
+          node -e "const r=require('./registry.json'); if(!Array.isArray(r.nodes)||!r.nodes.length) process.exit(1); for(const n of r.nodes){if(!n.url.startsWith('https://')||!['mastodon','matrix','lemmy','peertube','pixelfed'].includes(n.type)) process.exit(1)}"
       - name: Publish updated registry
         run: |
           if git diff --quiet -- registry.json; then
