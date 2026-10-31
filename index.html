@@ -223,6 +223,7 @@ button:active,.btn:active{transform:translateY(0) scale(.985)}
 </main>
 <footer class="footer"><span>© ՀԱՅԵՐ · Բաց համայնքային էկոհամակարգ</span><span>Կառուցվում է անկախ բաց հարթակների վրա</span></footer>
 </div>
+<script src="./matrix-sdk.js"></script>
 <script>
 const STORAGE_KEY="hayer.registry.v2";
 const $=id=>document.getElementById(id);
@@ -281,8 +282,10 @@ function mxServer(){return (document.getElementById("matrixServer")?.value||HAYE
 function mxUserLocal(){return (document.getElementById("matrixUsername")?.value||"").trim().replace(/^@/,"").split(":")[0]}
 function mxPassword(){return document.getElementById("matrixPassword")?.value||""}
 function mxSetStatus(message){const s=document.getElementById("authStatus");if(s)s.textContent=message}
-function mxSave(){localStorage.setItem(mxStoreKey,JSON.stringify(mx))}
-function mxLoad(){try{const x=JSON.parse(localStorage.getItem(mxStoreKey)||"null");if(x&&x.base&&x.token&&x.userId){mx=x;return true}}catch{}return false}
+const mxDbPromise=new Promise((resolve,reject)=>{if(!("indexedDB" in window)){reject(Error("IndexedDB unavailable"));return}const request=indexedDB.open("hayer-secure-session",1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("sessions"))request.result.createObjectStore("sessions")};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});
+async function mxSave(){try{const db=await mxDbPromise;await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readwrite");tx.objectStore("sessions").put(mx,"matrix");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});return true}catch{return false}}
+async function mxLoad(){try{const db=await mxDbPromise;const saved=await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readonly"),req=tx.objectStore("sessions").get("matrix");req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});if(saved?.base&&saved?.token&&saved?.userId){mx=saved;return true}}catch{}return false}
+async function mxClearSavedSession(){try{const db=await mxDbPromise;await new Promise((resolve,reject)=>{const tx=db.transaction("sessions","readwrite");tx.objectStore("sessions").delete("matrix");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}catch{}}
 async function mxRequest(path,opts={}){
  if(!mx?.base)throw Error("Matrix սերվերը կարգավորված չէ։");
  const headers={...(opts.headers||{})};if(opts.body&&!(opts.body instanceof FormData))headers["Content-Type"]="application/json";if(mx.token)headers.Authorization="Bearer "+mx.token;
@@ -295,34 +298,35 @@ async function mxResolveBase(server){
  try{const r=await fetch(origin+"/.well-known/matrix/client",{cache:"no-store"});if(r.ok){const j=await r.json(),b=j?.["m.homeserver"]?.base_url;if(b)return b.replace(/\/$/,"")}}catch{}
  return origin;
 }
-function mxSetUser(userId,token,deviceId,base){
- mx={base,token,userId,deviceId};const local=userId.slice(1).split(":")[0];hayidUser={id:userId,handle:userId,name:local,avatar_url:""};mxSave();localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));
+async function mxSetUser(userId,token,deviceId,base,refreshToken=null){
+ mx={base,token,userId,deviceId,refreshToken};const local=userId.slice(1).split(":")[0];hayidUser={id:userId,handle:userId,name:local,avatar_url:""};const saved=await mxSave();localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));if(!saved)mxSetStatus("Մուտքը հաջողվեց, բայց անվտանգ սեսիայի պահպանումը հասանելի չէ այս բրաուզերում։");
 }
 async function mxFinishLogin(data,base){
- mxSetUser(data.user_id,data.access_token,data.device_id,base);
+ await mxSetUser(data.user_id,data.access_token,data.device_id,base,data.refresh_token||null);
  try{const p=await mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(mx.userId));hayidUser.name=p.displayname||mx.userId.slice(1).split(":")[0];hayidUser.avatar_url=p.avatar_url||"";localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser))}catch{}
  hayidRender();mxSetStatus("Մուտքը հաջողվեց։ HAYID՝ "+hayidUser.handle);enterHayerApp();
 }
 async function mxLogin(){
  const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
- mxSetStatus("Կապվում ենք հանրային սերվերին…");
- try{const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};const d=await mxRequest("/_matrix/client/v3/login",{method:"POST",body:JSON.stringify({type:"m.login.password",identifier:{type:"m.id.user",user:local},password,initial_device_display_name:"HAYER Web"})});await mxFinishLogin(d,base)}
- catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+e.message+"։ Եթե հաշիվ չունես, օգտագործիր HAYER-ի «Ստեղծել հաշիվ» կոճակը կամ ընտրիր գրանցումը թույլատրող այլ հանրային սերվեր։")}
+ if(!window.HayerMatrixSDK){mxSetStatus("Matrix SDK-ը դեռ չի բեռնվել։ Թարմացրու էջը և փորձիր կրկին։");return}
+ mxSetStatus("Matrix SDK-ով կապվում ենք հանրային սերվերին…");
+ try{const result=await HayerMatrixSDK.loginWithPassword(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});await mxFinishLogin(result.credentials,result.baseUrl)}
+ catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+(e.message||"Անհայտ սխալ։")+" Ստուգիր սերվերի հասցեն, CORS-ը և հաշվի տվյալները։")}
 }
 async function mxRegister(){
  const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
- if(!/^[a-z0-9._=-]{1,64}$/i.test(local)){mxSetStatus("Օգտանունը պարունակում է չթույլատրված նշաններ։");return}
- if(password.length<8){mxSetStatus("Գաղտնաբառը պետք է լինի առնվազն 8 նիշ։");return}
- mxSetStatus("Ստուգում ենք՝ արդյոք սերվերը թույլատրում է հավելվածից գրանցվել…");
+ if(!window.HayerMatrixSDK){mxSetStatus("Matrix SDK-ը դեռ չի բեռնվել։ Թարմացրու էջը և փորձիր կրկին։");return}
+ if(!/^[a-z0-9._=-]{1,64}$/i.test(local)||password.length<8){mxSetStatus("Ստուգիր օգտանունը և գաղտնաբառի երկարությունը (առնվազն 8 նիշ)։");return}
+ mxSetStatus("Գրանցվում ենք HAYER-ից՝ Matrix SDK-ի միջոցով…");
  try{
-  const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};
-  const d=await mxRequest("/_matrix/client/v3/register",{method:"POST",body:JSON.stringify({username:local,password,auth:{type:"m.login.dummy"},initial_device_display_name:"HAYER Web"})});
-  if(!d.access_token)throw Error("Սերվերը հաշիվը չի ակտիվացրել անմիջապես։ Պահանջվում է լրացուցիչ հաստատում, որը HAYER-ի գրանցման ձևում դեռ չի ավարտվում։ Ընտրիր այլ հանրային սերվեր կամ փորձիր ավելի ուշ։");
-  await mxFinishLogin(d,base);
- }catch(e){
-  const detail=e.data?.flows? "Սերվերը պահանջում է լրացուցիչ գրանցման քայլ (օրինակ՝ email կամ CAPTCHA). դա հնարավոր չէ շրջանցել։ ":"";
-  mxSetStatus("Գրանցումը չհաջողվեց․ "+detail+e.message+"։ HAYER-ը դեռ չի կարող ավարտել այս սերվերի պահանջած լրացուցիչ հաստատման քայլը։ Փորձիր ընտրել գրանցումը թույլատրող այլ հանրային Matrix սերվեր։");
- }
+  const result=await HayerMatrixSDK.registerAccount(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});
+  if(result.needsAuthentication){
+   const stages=(result.challenge?.flows||[]).map(flow=>(flow.stages||[]).join(" → ")).filter(Boolean);
+   mxSetStatus("Այս սերվերը պահանջում է լրացուցիչ հաստատում"+(stages.length?": "+stages.join(" կամ "):"")+"։ HAYER-ը չի շրջանցում այդ պահանջը։ Ընտրիր այլ հանրային սերվեր, որը թույլատրում է անմիջական գրանցում։");
+   return;
+  }
+  await mxFinishLogin(result.credentials,result.baseUrl);
+ }catch(e){mxSetStatus("Գրանցումը չհաջողվեց․ "+(e.message||"Սերվերը չի ընդունում նոր գրանցումներ։")+" Ընտրիր այլ հանրային Matrix սերվեր կամ փորձիր ավելի ուշ։")}
 }
 function hayidRender(){
  const p=document.getElementById("hayidProfile"),b=document.getElementById("hayidLogout"),g=document.getElementById("hayidGoogleButton");
@@ -335,13 +339,13 @@ function hayidInit(){
  document.getElementById("hayidLogout")?.addEventListener("click",mxLogout);
  if(mxLoad())restoreHayerSession();else mxSetStatus("Մուտք գործիր Matrix հաշիվով կամ ստեղծիր հաշիվ հանրային սերվերում։");
 }
-async function mxLogout(){try{await mxRequest("/_matrix/client/v3/logout",{method:"POST",body:"{}"})}catch{}mx=null;hayidUser=null;localStorage.removeItem(mxStoreKey);localStorage.removeItem("hayer.hayid.profile.v1");if(chatPollTimer)clearInterval(chatPollTimer);document.getElementById("hayerApp").style.display="none";document.getElementById("authScreen").style.display="grid";document.body.classList.add("auth-mode");mxSetStatus("Դուրս եկար։")}
+async function mxLogout(){try{if(window.HayerMatrixSDK)await HayerMatrixSDK.stopActiveClient({logout:true});else await mxRequest("/_matrix/client/v3/logout",{method:"POST",body:"{}"})}catch{}mx=null;hayidUser=null;await mxClearSavedSession();localStorage.removeItem(mxStoreKey);localStorage.removeItem("hayer.hayid.profile.v1");if(chatPollTimer)clearInterval(chatPollTimer);document.getElementById("hayerApp").style.display="none";document.getElementById("authScreen").style.display="grid";document.body.classList.add("auth-mode");mxSetStatus("Դուրս եկար։")}
 async function mxProfile(userId){return mxRequest("/_matrix/client/v3/profile/"+encodeURIComponent(userId))}
 function mxRooms(){try{return JSON.parse(localStorage.getItem(mxRoomsKey)||"{}")}catch{return {}}}
 function mxSaveRooms(r){localStorage.setItem(mxRoomsKey,JSON.stringify(r))}
 async function mxRoomState(roomId,type,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key))}
 async function mxSetState(roomId,type,content,key=""){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/state/"+encodeURIComponent(type)+"/"+encodeURIComponent(key),{method:"PUT",body:JSON.stringify(content)})}
-async function mxSend(roomId,type,content){return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
+async function mxSend(roomId,type,content){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.sendHayerEvent(roomId,type,content);return mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/send/"+encodeURIComponent(type)+"/"+crypto.randomUUID(),{method:"PUT",body:JSON.stringify(content)})}
 async function mxTimeline(roomId,limit=100){
  const d=await mxRequest("/_matrix/client/v3/rooms/"+encodeURIComponent(roomId)+"/messages?dir=b&limit="+limit);
  return (d.chunk||[]).slice().reverse();
@@ -353,8 +357,8 @@ async function mxEnsureFeed(){
  const d=await mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify({visibility:"public",room_alias_name:"hayer-feed",name:"HAYER Feed",topic:"Միայն HAYER անդամների հրապարակումներ",preset:"public_chat",initial_state:[{type:"org.hayer.room_kind",state_key:"",content:{kind:"feed",version:1}}]})});
  cache.feed=d.room_id;mxSaveRooms(cache);return d.room_id;
 }
-async function mxCreateRoom(opts){return mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify(opts)})}
-async function mxJoinedRooms(){const d=await mxRequest("/_matrix/client/v3/joined_rooms");return d.joined_rooms||[]}
+async function mxCreateRoom(opts){if(window.HayerMatrixSDK?.getActiveClient())return HayerMatrixSDK.createHayerRoom(opts);return mxRequest("/_matrix/client/v3/createRoom",{method:"POST",body:JSON.stringify(opts)})}
+async function mxJoinedRooms(){if(window.HayerMatrixSDK?.getActiveClient())return (await HayerMatrixSDK.getJoinedRooms()).map(r=>r.roomId);const d=await mxRequest("/_matrix/client/v3/joined_rooms");return d.joined_rooms||[]}
 async function mxInvitedRooms(){try{const d=await mxRequest("/_matrix/client/v3/sync?timeout=0");return Object.entries(d.rooms?.invite||{}).map(([room_id,data])=>({room_id,events:data.invite_state?.events||[]}))}catch{return []}}
 async function mxRoomName(roomId){try{const s=await mxRoomState(roomId,"m.room.name");return s.name||""}catch{return ""}}
 async function mxRoomKind(roomId){try{return await mxRoomState(roomId,"org.hayer.room_kind")}catch{return null}}
@@ -400,7 +404,12 @@ async function mxApi(path,opts={}){
 }
 async function apiFetch(path,opts={}){return mxApi(path,opts)}
 async function restoreHayerSession(){
- if(!mxLoad())return false;try{const p=await mxProfile(mx.userId);hayidUser={id:mx.userId,handle:mx.userId,name:p.displayname||mx.userId.slice(1).split(":")[0],avatar_url:p.avatar_url||""};localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();enterHayerApp();return true}catch(e){mx=null;localStorage.removeItem(mxStoreKey);mxSetStatus("Պահված մուտքը այլևս վավեր չէ։ Մուտք գործիր կրկին։");return false}
+ if(!await mxLoad())return false;
+ try{
+  if(!window.HayerMatrixSDK)throw Error("Matrix SDK bundle-ը չի բեռնվել։");
+  await HayerMatrixSDK.resumeSession({user_id:mx.userId,access_token:mx.token,device_id:mx.deviceId,refresh_token:mx.refreshToken},mx.base,{enableEncryption:true});
+  const p=await mxProfile(mx.userId);hayidUser={id:mx.userId,handle:mx.userId,name:p.displayname||mx.userId.slice(1).split(":")[0],avatar_url:p.avatar_url||""};localStorage.setItem("hayer.hayid.profile.v1",JSON.stringify(hayidUser));hayidRender();enterHayerApp();return true;
+ }catch(e){mx=null;await mxClearSavedSession();mxSetStatus("Պահված մուտքը կամ SDK սեսիան այլևս վավեր չէ։ Մուտք գործիր կրկին։ "+(e.message||""));return false}
 }
 hayidInit();
 
