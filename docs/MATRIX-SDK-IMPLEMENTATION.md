@@ -4,7 +4,7 @@
 
 This repository is evolving into a first-party Matrix client named HAYER. The user-facing account, profile, feed, chat and community experience remains HAYER-branded. Matrix homeservers are public third-party infrastructure; HAYER does not operate or rent a homeserver.
 
-## Initial SDK foundation
+## SDK integration status
 
 - `src/matrix/client.js` is the shared Matrix SDK adapter.
 - Homeserver discovery resolves `/.well-known/matrix/client`, then checks versions, login flows and registration availability.
@@ -22,7 +22,7 @@ The first shared client is JavaScript/TypeScript so it can be used by the web ap
 - Android: Capacitor shell, with native secure storage for refresh/access credentials.
 - Windows and Linux: Tauri shell, with OS-backed credential storage.
 
-The current static GitHub Pages application is not yet migrated to this adapter. Do not remove the existing REST implementation until the SDK-backed replacement has passed browser tests.
+The browser app loads the esbuild-generated `matrix-sdk.js` bundle. Login, registration, session restore, logout, room creation/join/list, and HAYER event sends are routed through the SDK adapter. Legacy REST reads and some account/profile operations remain during the migration.
 
 ## Security requirements
 
@@ -36,7 +36,7 @@ The current static GitHub Pages application is not yet migrated to this adapter.
 
 ## Remaining integration work
 
-1. Wire the adapter into the existing login and registration UI.
+1. Complete Matrix UI-auth registration stages (email, CAPTCHA, terms) inside HAYER.
 2. Implement Matrix interactive-authentication UI for email, CAPTCHA and terms flows.
 3. Replace raw REST polling with SDK sync and room timelines.
 4. Migrate Feed, Chat, Groups, Communities, Profile and media operations to SDK methods.
