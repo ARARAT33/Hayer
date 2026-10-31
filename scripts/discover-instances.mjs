@@ -49,7 +49,7 @@ function node(type, host, extra = {}) {
     integrationModes: ["federated_public"],
     capabilities: extra.capabilities || ["public_read", "federation"],
     registration: extra.registration || "unknown",
-    health: "healthy",
+    health: extra.health || "unknown",
     lastCheckedAt: new Date().toISOString(),
     policyUrls: extra.policyUrls || [],
     verified: extra.verified ?? false,
@@ -115,6 +115,7 @@ async function peerNodes(seedUrl, fallbackType) {
         source: seedUrl,
         software: version || type,
         registration,
+        capabilities: ["public_read", "federation"], health: "healthy", verified: true,
         policyUrls: [info.configuration?.urls?.privacy_policy, info.configuration?.urls?.about].filter(Boolean),
         notes: `Public peer discovered through ${new URL(seedUrl).hostname}; public instance metadata responded. Signup and app permissions are controlled by its operator.`,
       });
@@ -149,6 +150,7 @@ async function lemmyNodes() {
       return node("lemmy", host, {
         name, statusUrl: `${host}/api/v3/site`, source: SOURCES.lemmy,
         registration: registration === "Open" ? "open" : registration === "Closed" ? "closed" : registration === "RequireApplication" ? "invite_only" : "unknown",
+        health: "healthy", verified: true,
         notes: "Discovered in the Lemmy community statistics dataset and verified with the public /api/v3/site endpoint. Signup and federation rules are controlled by the operator.",
       });
     }));
