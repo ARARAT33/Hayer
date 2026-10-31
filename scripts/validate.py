@@ -29,11 +29,6 @@ assert "function serviceLaunchUrl(node)" in html
 assert 'id="refreshServicesBtn"' in html
 assert "renderServiceActions();" in html
 assert "data.generatedAt" in html
-assert 'id="publicFeed"' in html
-assert 'id="feedPostsBtn"' in html
-assert 'id="feedVideosBtn"' in html
-assert 'id="feedCommunitiesBtn"' in html
-assert "async function loadPublicFeed" in html
 assert 'id="hayidGoogleButton"' in html
 assert "async function hayidVerify(jwt)" in html
 assert "crypto.subtle.verify" in html
@@ -48,13 +43,10 @@ assert 'data-view="explore"' in html and 'id="appViewExplore"' in html, "Federat
 assert "function renderExploreServices()" in html, "Explore service renderer must be present"
 assert "#legacyApp{display:none!important}" in html, "Legacy portal must remain hidden after authentication"
 assert "function youTubeEmbed(value)" in html, "Safe YouTube embed helper must be present"
-assert 'id="publicExploreFeed"' in html and 'id="explorePostsBtn"' in html, "Public federation explorer feed controls must be present"
 assert 'const postLink=safeUrl(p.link_url)' in html, "HAYER post links must be HTTPS validated"
 assert 'const mediaUrl=safeUrl(m.url)' in html, "HAYER post media URLs must be HTTPS validated"
 assert 'const communityLink=safeUrl(post.link_url)' in html, "Community post links must be HTTPS validated"
 assert 'const safeImage=safeUrl(imageUrl)' in html, "Public preview images must be HTTPS validated"
-assert "for(const instance of candidates)" in html, "Public feed must try fallback instances"
-assert '$("publicExploreSource").textContent="CORS' in html, "Public feed must explain CORS uncertainty"
 assert "navigator.share" in html, "Post sharing action must be available"
 assert 'id="mediaDetailsDialog"' in html and 'method:"HEAD"' in html, "File details inspector must be present"
 assert 'id="mediaDetailsCheck"' in html, "External metadata check must require an explicit user action"
@@ -62,7 +54,6 @@ assert "credentials:\"omit\",referrerPolicy:\"no-referrer\"" in html, "External 
 assert "Metadata ստուգելիս հարցում կուղարկվի արտաքին հոսթին" in html, "Media inspector must disclose the external request privacy impact"
 assert 'addEventListener("contextmenu"' in html and 'pointerType!=="touch"' in html, "File details must support right-click and long press"
 assert 'className="app-file-link"' in html, "Chat attachments must expose file details"
-assert 'if(nodes.length)loadPublicFeed(activeFeed)' not in html, "Hidden legacy feed must not auto-fetch on startup"
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
 with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as f:
@@ -79,3 +70,8 @@ for asset in ["index.html", "registry.json", "manifest.webmanifest", "sw.js", "i
     assert (root / "dist" / asset).is_file(), f"Missing Pages artifact: {asset}"
 assert not (root / "dist" / "backend").exists(), "Backend source must not be published as static assets"
 print("HAYER static and Pages build validation passed.")
+
+# HAYER timelines must contain only HAYER-authored content; external public feeds are forbidden.
+assert "loadPublicFeed" not in html, "Third-party public timelines must not be imported into HAYER"
+assert "publicFeedSection" not in html and "publicExploreFeed" not in html, "External feed UI must remain absent"
+assert "HAYER հաշիվների ստեղծած հրապարակումները" in html, "Explore must state the HAYER-only content rule"
