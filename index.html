@@ -314,19 +314,36 @@ async function mxLogin(){
  catch(e){mx=null;mxSetStatus("Մուտքը չհաջողվեց․ "+(e.message||"Անհայտ սխալ։")+" Ստուգիր սերվերի հասցեն, CORS-ը և հաշվի տվյալները։")}
 }
 async function mxRegister(){
- const server=mxServer(),local=mxUserLocal(),password=mxPassword();if(!server||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
+ const input=document.getElementById("matrixServer"),requested=mxServer(),local=mxUserLocal(),password=mxPassword();
+ if(!requested||!local||!password){mxSetStatus("Լրացրու սերվերը, օգտանունը և գաղտնաբառը։");return}
  if(!window.HayerMatrixSDK){mxSetStatus("Matrix SDK-ը դեռ չի բեռնվել։ Թարմացրու էջը և փորձիր կրկին։");return}
  if(!/^[a-z0-9._=-]{1,64}$/i.test(local)||password.length<8){mxSetStatus("Ստուգիր օգտանունը և գաղտնաբառի երկարությունը (առնվազն 8 նիշ)։");return}
- mxSetStatus("Գրանցվում ենք HAYER-ից՝ Matrix SDK-ի միջոցով…");
- try{
-  const result=await HayerMatrixSDK.registerAccount(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});
-  if(result.needsAuthentication){
-   const stages=(result.challenge?.flows||[]).map(flow=>(flow.stages||[]).join(" → ")).filter(Boolean);
-   mxSetStatus("Այս սերվերը պահանջում է լրացուցիչ հաստատում"+(stages.length?": "+stages.join(" կամ "):"")+"։ HAYER-ը չի շրջանցում այդ պահանջը։ Ընտրիր այլ հանրային սերվեր, որը թույլատրում է անմիջական գրանցում։");
+ const candidates=[requested,...(requested.toLowerCase().replace(/^https?:\\/\\//,"").replace(/\\/$/,"")==="matrix.org"?[]:["matrix.org"])];
+ let lastError=null;
+ for(let i=0;i<candidates.length;i++){
+  const server=candidates[i];
+  if(i>0){input.value=server;mxSetStatus(requested+" սերվերը չի թույլատրում ինքնասպասարկվող գրանցում։ Փորձում ենք պաշտոնական հանրային Matrix սերվերը՝ "+server+"…")}
+  else mxSetStatus("Գրանցվում ենք HAYER-ից՝ "+server+" սերվերում…");
+  try{
+   const result=await HayerMatrixSDK.registerAccount(server,local,password,{deviceName:"HAYER Web",enableEncryption:true});
+   if(result.needsAuthentication){
+    const stages=(result.challenge?.flows||[]).map(flow=>(flow.stages||[]).join(" → ")).filter(Boolean);
+    mxSetStatus(server+" սերվերը պահանջում է լրացուցիչ հաստատում"+(stages.length?": "+stages.join(" կամ "):"")+"։ HAYER-ը չի շրջանցում այդ պահանջը։ Կարող ես ընտրել այլ սերվեր կամ շարունակել սերվերի թույլատրած հաստատմամբ։");
+    return;
+   }
+   await mxFinishLogin(result.credentials,result.baseUrl,result.encryption);
    return;
+  }catch(e){
+   lastError=e;
+   const disabled=e?.status===403||e?.data?.errcode==="M_FORBIDDEN";
+   if(!(disabled&&i<candidates.length-1))break;
   }
-  await mxFinishLogin(result.credentials,result.baseUrl);
- }catch(e){mxSetStatus("Գրանցումը չհաջողվեց․ "+(e.message||"Սերվերը չի ընդունում նոր գրանցումներ։")+" Ընտրիր այլ հանրային Matrix սերվեր կամ փորձիր ավելի ուշ։")}
+ }
+ const code=lastError?.data?.errcode||"";
+ const detail=lastError?.data?.error||lastError?.message||"Սերվերը չի ընդունում նոր գրանցումներ։";
+ if(lastError?.status===403||code==="M_FORBIDDEN"){
+  mxSetStatus("Գրանցումը մերժվեց (403)․ "+detail+" Փորձված հանրային սերվերները չեն թույլատրել գրանցումը։ Ընտրիր այլ սերվեր, որը բաց է ինքնասպասարկվող գրանցման համար։");
+ }else mxSetStatus("Գրանցումը չհաջողվեց․ "+detail+" Ստուգիր սերվերի հասանելիությունը և փորձիր կրկին։");
 }
 function hayidRender(){
  const p=document.getElementById("hayidProfile"),b=document.getElementById("hayidLogout"),g=document.getElementById("hayidGoogleButton");
