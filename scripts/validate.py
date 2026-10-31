@@ -56,6 +56,9 @@ assert 'const safeImage=safeUrl(imageUrl)' in html, "Public preview images must 
 assert "for(const instance of candidates)" in html, "Public feed must try fallback instances"
 assert '$("publicExploreSource").textContent="CORS' in html, "Public feed must explain CORS uncertainty"
 assert "navigator.share" in html, "Post sharing action must be available"
+assert 'id="mediaDetailsDialog"' in html and 'method:"HEAD"' in html, "File details inspector must be present"
+assert 'addEventListener("contextmenu"' in html and 'pointerType!=="touch"' in html, "File details must support right-click and long press"
+assert 'className="app-file-link"' in html, "Chat attachments must expose file details"
 assert 'if(nodes.length)loadPublicFeed(activeFeed)' not in html, "Hidden legacy feed must not auto-fetch on startup"
 scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S)
 assert scripts, "No inline application script found"
