@@ -1,0 +1,43 @@
+name: Refresh public federated registry
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-registry-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Discover public instances
+        run: node scripts/discover-instances.mjs
+      - name: Validate registry JSON
+        run: |
+          node -e "const r=require('./registry.json'); if(!Array.isArray(r.nodes)||!r.nodes.length) process.exit(1); for(const n of r.nodes){if(!n.url.startsWith('https://')||!['matrix','peertube'].includes(n.type)) process.exit(1)}"
+      - name: Publish updated registry
+        run: |
+          if git diff --quiet -- registry.json; then
+            echo "Registry unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add registry.json
+          git commit -m "chore(registry): refresh public federated instances"
+          git push
