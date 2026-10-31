@@ -16,7 +16,7 @@
 - [x] Տեղային վերջին ռեեստրի cache
 - [x] CORS-aware առողջության ստուգման նախնական հիմք
 - [x] Matrix և PeerTube հանրային instance discovery
-- [x] Lemmy հանրային instance discovery՝ LemmyNet-ի հրապարակային վիճակագրական տվյալներով
+- [x] Lemmy հանրային instance discovery՝ Lemmy-ի ֆեդերացիայի API-ով և `/api/v3/site` ստուգմամբ
 - [x] Mastodon և Pixelfed peer discovery՝ հանրային instance metadata API-ներով
 - [ ] Ամբողջական, օգտատիրոջ համար անտեսանելի ընտրության և ավտոմատ failover շերտ
 - [x] Registry aggregation և deduplication
@@ -25,7 +25,7 @@
 - [ ] HAYER ID / OIDC identity provider և մեկ գրանցում
 - [ ] Ծառայությունների adapter-ներ և թույլտվություններով SSO/OAuth
 - [x] Lemmy, Mastodon և Pixelfed հանրային կատալոգների adapter-ների առաջին տարբերակ
-- [ ] Իրական ծառայությունների ինտեգրում և end-to-end թեստեր
+- [x] Mastodon հանրային լրահոսի ընթերցում (CORS թույլտվության դեպքում)\n- [x] PeerTube հանրային տեսանյութերի կատալոգ (CORS թույլտվության դեպքում)\n- [x] Lemmy հանրային համայնքների կատալոգ (CORS թույլտվության դեպքում)\n- [ ] Matrix-ի ներսում ամբողջական chat UI և արտաքին հաշիվների OAuth\n- [ ] HAYER ID / մեկ միասնական գրանցում և հաշվի վերականգնում\n- [ ] Գրել/հրապարակել, անձնական հաղորդագրություններ և ֆայլերի վերբեռնում՝ օպերատորի թույլտվությամբ
 
 ## Միասնական հաշիվ և բաշխված տվյալներ
 
