@@ -1,19 +1,11 @@
-// Export all utilities
+'use strict';
+
+// Export only utility modules present in this repository.
 module.exports = {
   encryption: require('./encryption'),
-  validation: require('./validation'),
+  faceDetection: require('./faceDetection'),
+  i18n: require('./i18n'),
   pagination: require('./pagination'),
-  caching: require('./caching'),
-  rateLimiter: require('./rateLimiter'),
-  fileUpload: require('./fileUpload'),
-  logger: require('./logger'),
-  errorHandler: require('./errorHandler'),
-  requestLogger: require('./requestLogger'),
-  security: require('./security'),
-  authentication: require('./authentication'),
-  database: require('./database'),
-  dateUtils: require('./dateUtils'),
-  stringUtils: require('./stringUtils'),
-  arrayUtils: require('./arrayUtils'),
-  objectUtils: require('./objectUtils')
+  qrCode: require('./qrCode'),
+  validation: require('./validation')
 };
