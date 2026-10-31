@@ -47,7 +47,96 @@ body.auth-mode{background:radial-gradient(ellipse at 15% 10%,#23456a 0,transpare
 .app-profile-id{font-size:19px;color:#67d5d0;font-weight:800;overflow-wrap:anywhere}
 .app-empty-icon{font-size:34px;margin-bottom:10px}
 @media(max-width:760px){.app-layout{grid-template-columns:1fr}.app-sidebar{position:fixed;z-index:10;top:auto;bottom:0;left:0;right:0;width:100%;height:auto;padding:8px 10px calc(8px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid #263852;display:block}.app-brand,.app-side-profile,.app-plus{display:none}.app-nav{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}.app-nav button{justify-content:center;flex-direction:column;gap:4px;padding:8px 2px;font-size:10px}.app-nav .nav-emoji{font-size:18px}.app-main{padding:22px 14px 105px}#appFeedGrid{grid-template-columns:1fr}}
-.app-field{width:100%;padding:12px;border:1px solid #344b68;border-radius:12px;background:#0b1728;color:#edf4ff;margin:7px 0;font:inherit;resize:vertical}.app-compose-actions,.app-search-row,.app-send-row{display:flex;gap:10px;align-items:center}.app-compose-actions{justify-content:space-between}.app-search-row .app-field,.app-send-row .app-field{flex:1}.app-chat-layout{display:grid;grid-template-columns:.8fr 1.4fr;gap:12px}.app-messages{min-height:220px;max-height:400px;overflow:auto}.app-message{padding:10px;margin:6px 0;border-radius:12px;background:#172840}.app-message.mine{text-align:right;background:#1d3d48}.app-post{border:1px solid #263852;background:#101c2d;border-radius:18px;padding:16px;margin:12px 0}.app-post-media{width:100%;max-height:420px;object-fit:contain}.app-community-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}[data-theme="light"] #hayerApp{background:#f4f7fb;color:#172338}[data-theme="light"] .app-sidebar,[data-theme="light"] .app-panel,[data-theme="light"] .app-post{background:#fff;color:#172338;border-color:#dce4ef}[data-theme="light"] .app-field{background:#fff;color:#172338;border-color:#cbd5e1}[data-theme="light"] .app-nav button{color:#52647d}[data-theme="light"] .app-nav button.active{background:#e8eef7;color:#172338}@media(max-width:760px){.app-chat-layout,.app-community-grid{grid-template-columns:1fr}}</style>
+.app-field{width:100%;padding:12px;border:1px solid #344b68;border-radius:12px;background:#0b1728;color:#edf4ff;margin:7px 0;font:inherit;resize:vertical}.app-compose-actions,.app-search-row,.app-send-row{display:flex;gap:10px;align-items:center}.app-compose-actions{justify-content:space-between}.app-search-row .app-field,.app-send-row .app-field{flex:1}.app-chat-layout{display:grid;grid-template-columns:.8fr 1.4fr;gap:12px}.app-messages{min-height:220px;max-height:400px;overflow:auto}.app-message{padding:10px;margin:6px 0;border-radius:12px;background:#172840}.app-message.mine{text-align:right;background:#1d3d48}.app-post{border:1px solid #263852;background:#101c2d;border-radius:18px;padding:16px;margin:12px 0}.app-post-media{width:100%;max-height:420px;object-fit:contain}.app-community-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}[data-theme="light"] #hayerApp{background:#f4f7fb;color:#172338}[data-theme="light"] .app-sidebar,[data-theme="light"] .app-panel,[data-theme="light"] .app-post{background:#fff;color:#172338;border-color:#dce4ef}[data-theme="light"] .app-field{background:#fff;color:#172338;border-color:#cbd5e1}[data-theme="light"] .app-nav button{color:#52647d}[data-theme="light"] .app-nav button.active{background:#e8eef7;color:#172338}@media(max-width:760px){.app-chat-layout,.app-community-grid{grid-template-columns:1fr}}
+/* HAYER glass interface — layered translucent surfaces */
+:root{
+ --glass-bg:rgba(20,34,55,.48);--glass-strong:rgba(18,31,51,.72);
+ --glass-border:rgba(196,220,255,.18);--glass-highlight:rgba(255,255,255,.12);
+ --glass-shadow:0 24px 70px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.08);
+ --glass-blur:blur(24px) saturate(155%);
+}
+html{scroll-behavior:smooth}
+body{background:
+ radial-gradient(ellipse at 12% 8%,rgba(71,139,194,.25),transparent 34%),
+ radial-gradient(ellipse at 88% 22%,rgba(84,101,177,.22),transparent 34%),
+ radial-gradient(ellipse at 55% 100%,rgba(38,167,154,.13),transparent 42%),
+ #080f1b}
+button,.btn,.app-nav button,.app-plus,.app-feed-controls button,.auth-field,.app-field,
+.toolbar input,.toolbar select,.server,.feed-card,.app-post,.app-panel,.metric,.card,.panel,
+.auth-card,.hayid-panel,.hero,.arch,.app-side-profile,.app-sidebar{
+ transition:background .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease, color .25s ease;
+}
+#hayerApp{background:
+ radial-gradient(ellipse at 10% 0,rgba(72,137,190,.17),transparent 36%),
+ radial-gradient(ellipse at 95% 65%,rgba(87,92,168,.16),transparent 34%),
+ transparent}
+.app-sidebar{
+ background:rgba(8,17,31,.58);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+ border-right:1px solid var(--glass-border);box-shadow:12px 0 50px rgba(0,0,0,.12)
+}
+.app-main{position:relative}
+.app-topbar{padding:13px 17px;border:1px solid var(--glass-border);border-radius:22px;
+ background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.025));
+ backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+ box-shadow:var(--glass-shadow)}
+.app-panel,.app-post,.app-side-profile,.app-community-grid>*,.app-chat-layout>*,
+#appFeedGrid .feed-card{
+ background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025)),var(--glass-bg);
+ border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+ box-shadow:var(--glass-shadow)
+}
+.app-panel:hover,.app-post:hover,.app-community-grid>*:hover{border-color:rgba(153,210,255,.32);box-shadow:0 25px 65px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.12)}
+.app-nav button{border:1px solid transparent}
+.app-nav button.active{background:linear-gradient(115deg,rgba(229,184,92,.23),rgba(103,213,208,.12));border-color:rgba(229,184,92,.32);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.app-nav button:hover,.app-plus:hover{transform:translateX(3px);background:rgba(255,255,255,.09);border-color:var(--glass-border)}
+.app-plus{background:rgba(229,184,92,.07);border-color:rgba(229,184,92,.34)}
+.app-field,.auth-field,.toolbar input,.toolbar select{
+ background:rgba(5,14,27,.48);border:1px solid rgba(188,216,248,.2);
+ box-shadow:inset 0 1px 5px rgba(0,0,0,.14);backdrop-filter:blur(12px)
+}
+.app-field:focus,.auth-field:focus,.toolbar input:focus,.toolbar select:focus{
+ outline:none;border-color:rgba(103,213,208,.72);box-shadow:0 0 0 3px rgba(103,213,208,.13),inset 0 1px 5px rgba(0,0,0,.12)
+}
+.app-feed-controls button,.btn,.service-action{
+ background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.035));
+ border:1px solid var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.1)
+}
+.app-feed-controls button.active,.btn.primary{
+ background:linear-gradient(135deg,#f1ce82,#dcae4f);border-color:#f1ce82;color:#182338;
+ box-shadow:0 8px 26px rgba(229,184,92,.2),inset 0 1px 0 rgba(255,255,255,.45)
+}
+button:hover,.btn:hover,.service-action:hover{transform:translateY(-2px);filter:brightness(1.12)}
+button:active,.btn:active{transform:translateY(0) scale(.985)}
+.app-message{background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px)}
+.app-message.mine{background:linear-gradient(135deg,rgba(49,143,143,.28),rgba(38,93,120,.22));border-color:rgba(103,213,208,.2)}
+.auth-card{
+ background:linear-gradient(145deg,rgba(27,48,75,.78),rgba(12,23,40,.72));
+ border:1px solid rgba(208,229,255,.2);backdrop-filter:blur(28px) saturate(165%);
+ -webkit-backdrop-filter:blur(28px) saturate(165%);box-shadow:0 35px 100px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.15)
+}
+.auth-logo{box-shadow:0 12px 40px rgba(229,184,92,.28),inset 0 1px 0 rgba(255,255,255,.55)}
+.app-post-media{border-radius:15px;border:1px solid var(--glass-border)}
+.app-profile-id{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(103,213,208,.09);border:1px solid rgba(103,213,208,.2)}
+@media(min-width:761px){.app-main{padding-top:28px}.app-view{padding-top:6px}}
+@media(max-width:760px){
+ .app-sidebar{background:rgba(8,17,31,.78);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 -12px 45px rgba(0,0,0,.2)}
+ .app-nav button.active{transform:translateY(-3px)}
+ .app-topbar{border-radius:18px;padding:12px 14px}
+}
+[data-theme="light"] #hayerApp{background:radial-gradient(ellipse at 10% 0,rgba(112,168,214,.18),transparent 36%),#eef3f9}
+[data-theme="light"] .app-sidebar{background:rgba(247,250,255,.74);border-color:rgba(99,125,160,.2)}
+[data-theme="light"] .app-topbar,[data-theme="light"] .app-panel,[data-theme="light"] .app-post,
+[data-theme="light"] .app-side-profile,[data-theme="light"] #appFeedGrid .feed-card{
+ background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(255,255,255,.58));
+ border-color:rgba(111,137,171,.22);box-shadow:0 20px 55px rgba(38,63,96,.08),inset 0 1px 0 #fff
+}
+[data-theme="light"] .app-field{background:rgba(255,255,255,.72);border-color:rgba(111,137,171,.3)}
+[data-theme="light"] .app-message{background:rgba(224,233,245,.75);border-color:rgba(111,137,171,.18)}
+[data-theme="light"] .app-message.mine{background:rgba(205,237,233,.82);border-color:rgba(61,153,145,.22)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+</style>
 </head>
 <body class="auth-mode">
 
