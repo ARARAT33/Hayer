@@ -242,7 +242,7 @@ function serviceLaunchUrl(node){
   const paths={mastodon:"/auth/sign_up",pixelfed:"/register",peertube:"/signup",lemmy:"/signup"};
   const base=new URL(node.url);
   if(node.registration==="open" && paths[node.type]) base.pathname=paths[node.type];
-  if(node.type==="matrix") return "https://app.element.io/#/register?hs_url="+encodeURIComponent(base.origin);
+  if(node.type==="matrix") return location.origin+location.pathname+"?homeserver="+encodeURIComponent(base.host);
   return base.href;
 }
 function renderServiceActions(){
@@ -273,6 +273,8 @@ function renderServiceActions(){
 }
 
 const HAYER_HOME="converser.eu",HAYER_FEED_ALIAS="#hayer-feed:converser.eu";
+const requestedHomeserver=new URLSearchParams(location.search).get("homeserver");
+if(requestedHomeserver&&document.getElementById("matrixServer"))document.getElementById("matrixServer").value=requestedHomeserver;
 let mx=null,hayidUser=null,currentConversation=null,chatPollTimer=null;
 const mxStoreKey="hayer.matrix.session.v1",mxRoomsKey="hayer.matrix.rooms.v1";
 function mxServer(){return (document.getElementById("matrixServer")?.value||HAYER_HOME).trim().replace(/^https?:\/\//,"").replace(/\/.*$/,"").toLowerCase()}
@@ -315,7 +317,7 @@ async function mxRegister(){
  try{
   const base=await mxResolveBase(server);mx={base,token:null,userId:null,deviceId:null};
   const d=await mxRequest("/_matrix/client/v3/register",{method:"POST",body:JSON.stringify({username:local,password,auth:{type:"m.login.dummy"},initial_device_display_name:"HAYER Web"})});
-  if(!d.access_token)throw Error("Սերվերը հաշիվ ստեղծեց, բայց մուտքի token չվերադարձրեց։ Փորձիր Element-ով մուտք գործել։");
+  if(!d.access_token)throw Error("Սերվերը հաշիվը չի ակտիվացրել անմիջապես։ Պահանջվում է լրացուցիչ հաստատում, որը HAYER-ի գրանցման ձևում դեռ չի ավարտվում։ Ընտրիր այլ հանրային սերվեր կամ փորձիր ավելի ուշ։");
   await mxFinishLogin(d,base);
  }catch(e){
   const detail=e.data?.flows? "Սերվերը պահանջում է լրացուցիչ գրանցման քայլ (օրինակ՝ email կամ CAPTCHA). դա հնարավոր չէ շրջանցել։ ":"";
