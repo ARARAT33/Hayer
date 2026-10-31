@@ -30,5 +30,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Check adapter syntax
         run: npm run check
+      - name: Build browser SDK bundle
+        run: npm run build:matrix
       - name: Run Matrix adapter tests
         run: npm test
