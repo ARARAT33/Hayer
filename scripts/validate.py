@@ -29,15 +29,19 @@ assert "function serviceLaunchUrl(node)" in html
 assert 'id="refreshServicesBtn"' in html
 assert "renderServiceActions();" in html
 assert "data.generatedAt" in html
-assert 'id="hayidGoogleButton"' in html
-assert "async function hayidVerify(jwt)" in html
-assert "crypto.subtle.verify" in html
-assert "HAYID_GOOGLE_CLIENT_ID" in html
+assert 'id="matrixLogin"' in html and 'id="matrixRegister"' in html
+assert "async function mxRequest(path,opts={})" in html
+assert "async function mxEnsureFeed()" in html
+assert "org.hayer.post" in html and "org.hayer.community" in html
+assert "hayer.matrix.session.v1" in html
+assert "HAYER_HOME=\"converser.eu\"" in html
+assert "HAYER_API" not in html and "workers.dev" not in html, "Legacy Cloudflare API must be fully removed from the frontend"
+assert "HAYID_GOOGLE_CLIENT_ID" not in html, "Google login must not reference the deleted backend"
+assert 'id="profileDisplayName"' in html and 'id="saveProfile"' in html
 assert "hayer.hayid.profile.v1" in html
 ids = re.findall(r"\bid=[\"']([^\"']+)[\"']", html)
 duplicates = sorted({value for value in ids if ids.count(value) > 1})
 assert not duplicates, f"Duplicate HTML IDs: {duplicates}"
-assert 'google.accounts.id.prompt()' not in html, "Google FedCM must not prompt automatically"
 assert '$("appCreateBtn").onclick' in html, "Create button must open the HAYER post composer"
 assert 'data-view="explore"' in html and 'id="appViewExplore"' in html, "Federated Explore view must be present"
 assert "function renderExploreServices()" in html, "Explore service renderer must be present"
