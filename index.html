@@ -96,20 +96,20 @@ $("checkBtn").onclick=async()=>{const candidates=nodes.filter(n=>n.statusUrl);if
 ["serverSearch","typeFilter","stateFilter"].forEach(id=>$(id).addEventListener(id==="serverSearch"?"input":"change",render));
 async function loadPublishedRegistry(showErrors=false){
   const button=$("discoverBtn");
+  const refresh=$("refreshServicesBtn");
   if(button){button.disabled=true;button.textContent="Որոնվում է…"}
+  if(refresh){refresh.disabled=true;refresh.textContent="Թարմացվում է…"}
   try{
     const response=await fetch("./registry.json?ts="+Date.now(),{cache:"no-store",headers:{Accept:"application/json"}});
     if(!response.ok)throw new Error("Հրապարակված ռեեստրը դեռ հասանելի չէ։");
     const data=await response.json();
     if(!Array.isArray(data.nodes))throw new Error("Ռեեստրի ձևաչափը սխալ է։");
-    const merged=new Map(nodes.map(n=>[n.id,n]));
-    data.nodes.map(cleanNode).filter(Boolean).forEach(n=>merged.set(n.id,n));
-    nodes=[...merged.values()];save();render();renderServiceActions();
+    nodes=data.nodes.map(cleanNode).filter(Boolean);save();render();renderServiceActions();
     const stamp=data.generatedAt?new Date(data.generatedAt).toLocaleString("hy-AM"):"ժամանակը անհայտ է";
     const updated=$("registryUpdated");if(updated)updated.textContent=nodes.length+" հանգույց · թարմացվել է "+stamp;
     if(showErrors)alert(data.nodes.length+" հանրային գրառում բեռնվեց ռեեստրից։");
   }catch(error){if(showErrors)alert("Չհաջողվեց թարմացնել ռեեստրը․ "+error.message)}
-  finally{if(button){button.disabled=false;button.textContent="Գտնել բաց սերվերներ"}}
+  finally{if(button){button.disabled=false;button.textContent="Գտնել բաց սերվերներ"}if(refresh){refresh.disabled=false;refresh.textContent="Թարմացնել ծառայությունները ↻"}}
 }
 $("discoverBtn").onclick=()=>loadPublishedRegistry(true);
 const refreshServices=$("refreshServicesBtn");if(refreshServices)refreshServices.onclick=()=>loadPublishedRegistry(true);
