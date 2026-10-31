@@ -1,0 +1,15 @@
+{
+  "common": {
+    "welcome": "Bari galust HAYER",
+    "hayer": "HAYER",
+    "loading": "Berum...",
+    "success": "Hajoghutyun",
+    "error": "Sxal",
+    "cancel": "Chegharkel",
+    "confirm": "Hastatel",
+    "submit": "Ugharkel",
+    "continue": "Sharaktsnel",
+    "back": "Yet",
+    "yes": "Ayo",
+    "no": "Voch"
+  }
