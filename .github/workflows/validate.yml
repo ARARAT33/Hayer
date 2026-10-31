@@ -16,6 +16,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install Matrix SDK build dependencies
+        run: npm install --no-audit --no-fund
       - name: Validate HTML assets and JSON
         run: python scripts/validate.py
       - name: Validate public discovery script
