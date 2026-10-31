@@ -47,12 +47,12 @@ function node(type, host, extra = {}) {
     source: extra.source || SOURCES[type] || "public peer discovery",
     software: extra.software || type,
     integrationModes: ["federated_public"],
-    capabilities: ["public_read", "federation"],
+    capabilities: extra.capabilities || ["public_read", "federation"],
     registration: extra.registration || "unknown",
     health: "healthy",
     lastCheckedAt: new Date().toISOString(),
     policyUrls: extra.policyUrls || [],
-    verified: true,
+    verified: extra.verified ?? false,
     notes: extra.notes || "Discovered from a public directory and checked through its public read-only API. Account creation and write access remain subject to the operator's policy.",
   };
 }
@@ -104,14 +104,14 @@ async function peerNodes(seedUrl, fallbackType) {
   const output = [];
   for (let i = 0; i < hosts.length; i += 8) {
     const batch = await Promise.allSettled(hosts.slice(i, i + 8).map(async (host) => {
-      const info = await getJson(`${host}/api/v2/instance`);
+      const info = await getJson(`${host}/api/v1/instance`);
       const version = String(info.version || "");
-      const type = /pixelfed/i.test(version) ? "pixelfed" : fallbackType;
+      const type = /pixelfed/i.test(version) || /pixelfed/i.test(info.title || "") ? "pixelfed" : fallbackType;
       const registrationValue = info.registrations?.enabled ?? info.registrations;
       const registration = registrationValue === true ? "open" : registrationValue === false ? "closed" : "unknown";
       return node(type, host, {
         name: info.title || info.domain,
-        statusUrl: `${host}/api/v2/instance`,
+        statusUrl: `${host}/api/v1/instance`,
         source: seedUrl,
         software: version || type,
         registration,
@@ -148,7 +148,7 @@ async function lemmyNodes() {
       const registration = view.local_site?.registration_mode;
       return node("lemmy", host, {
         name, statusUrl: `${host}/api/v3/site`, source: SOURCES.lemmy,
-        registration: registration === "Open" ? "open" : registration === "Closed" ? "closed" : "unknown",
+        registration: registration === "Open" ? "open" : registration === "Closed" ? "closed" : registration === "RequireApplication" ? "invite_only" : "unknown",
         notes: "Discovered in the Lemmy community statistics dataset and verified with the public /api/v3/site endpoint. Signup and federation rules are controlled by the operator.",
       });
     }));
@@ -185,7 +185,7 @@ if (failedTypes.size) {
 }
 const deduped = [...new Map(nodes.map((item) => [item.id, item])).values()]
   .sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
-if (!deduped.length) throw new Error(`No public instances discovered; refusing to overwrite the last good registry. ${failures.join("; ")}`);
+if (!deduped.length) throw new Error(`No public instances discovered; refusing to overwrite the last good registry. ${failures.join("; ")}`);\nfor (const item of deduped) {\n  if (!item.id || !item.url.startsWith("https://") || !["mastodon", "matrix", "lemmy", "peertube", "pixelfed"].includes(item.type)) throw new Error(`Invalid registry item: ${item.id || "missing id"}`);\n}
 const registry = {
   version: 2,
   generatedAt: new Date().toISOString(),
